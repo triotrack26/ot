@@ -8,12 +8,13 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>Dashboard</title>
+    <title>Dashboard - Office OT Register</title>
 
     <link rel="stylesheet"
           href="css/style.css">
 
 </head>
+
 
 <body>
 
@@ -22,7 +23,9 @@
 
     <div>
 
-        <h2>Office OT Register</h2>
+        <h2>
+            Office OT Register
+        </h2>
 
         <span>
             Employee Dashboard
@@ -32,6 +35,7 @@
 
 
     <button
+        type="button"
         onclick="logout()"
         class="logout-btn">
 
@@ -42,25 +46,33 @@
 </header>
 
 
+
 <main class="container">
 
 
-    <div class="welcome">
+    <!-- WELCOME -->
+
+    <section class="welcome">
 
         <p>
             Welcome
         </p>
 
         <h1 id="employeeName">
-            Loading...
+            Employee
         </h1>
 
-    </div>
+        <p id="employeeInfo">
+            Loading employee details...
+        </p>
+
+    </section>
 
 
-    <!-- SUMMARY -->
 
-    <div class="cards">
+    <!-- TODAY SUMMARY -->
+
+    <section class="cards">
 
 
         <div class="card">
@@ -69,13 +81,19 @@
                 ⏱️
             </div>
 
-            <h3>Today's OT</h3>
+            <h3>
+                Today's OT
+            </h3>
 
-            <p id="todayOT">
-                0 hrs
+            <p>
+                <span id="todayOT">
+                    0
+                </span>
+                hrs
             </p>
 
         </div>
+
 
 
         <div class="card">
@@ -84,94 +102,135 @@
                 🛠️
             </div>
 
-            <h3>Extra Duty</h3>
+            <h3>
+                Today's Extra Duty
+            </h3>
 
-            <p id="todayExtra">
-                0 hrs
+            <p>
+                <span id="todayExtra">
+                    0
+                </span>
+                hrs
             </p>
 
         </div>
 
 
-    </div>
+    </section>
 
 
-    <!-- MENU -->
+
+    <!-- QUICK ACTIONS -->
 
     <div class="section-title">
 
-        <h2>Quick Actions</h2>
+        <h2>
+            Quick Actions
+        </h2>
 
     </div>
 
 
-    <div class="menu-grid">
+
+    <section class="menu-grid">
 
 
-        <a href="daily.html"
-           class="menu-card">
+        <!-- DAILY OT -->
 
-            <span>➕</span>
+        <a
+            href="daily.html"
+            class="menu-card">
 
-            <h3>Daily OT Entry</h3>
+            <span>
+                ➕
+            </span>
+
+            <h3>
+                Daily OT Entry
+            </h3>
 
             <p>
-                Add today's overtime
-                and extra duty.
+                Add today's OT hours,
+                extra duty and remarks.
             </p>
 
         </a>
 
 
-        <a href="history.html"
-           class="menu-card">
 
-            <span>📋</span>
+        <!-- HISTORY -->
 
-            <h3>My History</h3>
+        <a
+            href="history.html"
+            class="menu-card">
+
+            <span>
+                📋
+            </span>
+
+            <h3>
+                OT History
+            </h3>
 
             <p>
-                View all previous
+                View all your previous
                 OT records.
             </p>
 
         </a>
 
 
-        <a href="report.html"
-           class="menu-card">
 
-            <span>📊</span>
+        <!-- REPORT -->
 
-            <h3>Monthly Report</h3>
+        <a
+            href="report.html"
+            class="menu-card">
+
+            <span>
+                📊
+            </span>
+
+            <h3>
+                Monthly Report
+            </h3>
 
             <p>
-                View and download
-                monthly report.
+                View monthly OT report
+                and export to Excel.
             </p>
 
         </a>
 
 
-        <a href="admin.html"
-           class="menu-card">
 
-            <span>⚙️</span>
+        <!-- ADMIN -->
 
-            <h3>Admin Settings</h3>
+        <a
+            href="admin.html"
+            class="menu-card">
+
+            <span>
+                ⚙️
+            </span>
+
+            <h3>
+                Admin Module
+            </h3>
 
             <p>
-                Configure office
-                working rules.
+                Manage office hours,
+                working days and rules.
             </p>
 
         </a>
 
 
-    </div>
+    </section>
 
 
 </main>
+
 
 
 <script src="js/db.js"></script>
