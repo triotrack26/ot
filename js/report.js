@@ -1,118 +1,147 @@
 // ============================================
-// MONTHLY REPORT
+// OFFICE OT REGISTER - MONTHLY REPORT
 // ============================================
 
 let reportEmployee = null;
 let currentReportRecords = [];
 
 
+// ============================================
+// PAGE LOAD
+// ============================================
 
-document.addEventListener(
-    "DOMContentLoaded",
-    async function () {
+document.addEventListener("DOMContentLoaded", async function () {
 
-        reportEmployee =
-            requireLogin();
+    reportEmployee = requireLogin();
 
+    if (!reportEmployee) {
+        return;
+    }
 
-        if (!reportEmployee) {
-            return;
-        }
+    // Employee name
+    const employeeName =
+        document.getElementById("reportEmployeeName");
 
-
-        document.getElementById(
-            "reportEmployeeName"
-        ).textContent =
+    if (employeeName) {
+        employeeName.textContent =
             reportEmployee.name;
+    }
 
 
-        document.getElementById(
-            "reportEmployeeId"
-        ).textContent =
+    // Employee ID
+    const employeeId =
+        document.getElementById("reportEmployeeId");
+
+    if (employeeId) {
+        employeeId.textContent =
             reportEmployee.employeeId;
+    }
 
 
-        const month =
-            document.getElementById(
-                "month"
-            );
+    // Month
+    const month =
+        document.getElementById("month");
 
+    if (month) {
 
-        if (month) {
-
-            month.value =
-                new Date()
-                    .toISOString()
-                    .substring(0, 7);
-
-        }
-
-
-        await loadMonthlyReport();
+        month.value =
+            new Date()
+                .toISOString()
+                .substring(0, 7);
 
     }
-);
 
+
+    // Load report
+    await loadMonthlyReport();
+
+});
 
 
 // ============================================
-// LOAD REPORT
+// LOAD MONTHLY REPORT
 // ============================================
 
 async function loadMonthlyReport() {
 
     try {
 
-        const month =
-            document.getElementById(
-                "month"
-            ).value;
+        if (!reportEmployee) {
+            return;
+        }
 
 
-        if (!month) {
+        const monthElement =
+            document.getElementById("month");
+
+
+        if (!monthElement) {
+
+            console.error(
+                "Month input not found."
+            );
+
+            return;
+        }
+
+
+        const selectedMonth =
+            monthElement.value;
+
+
+        if (!selectedMonth) {
 
             alert(
                 "Please select a month."
             );
 
             return;
-
         }
 
 
-        const records =
+        // Get all saved OT records
+        const allRecords =
             await getAllRecords();
 
 
+        // Filter employee + month
         currentReportRecords =
-            records.filter(
-                record =>
+            allRecords.filter(function (record) {
 
-                    String(
-                        record.employeeId
-                    ) === String(
-                        reportEmployee.employeeId
-                    )
+                return (
+
+                    String(record.employeeId) ===
+                    String(reportEmployee.employeeId)
 
                     &&
 
-                    record.month === month
-            );
+                    record.month ===
+                    selectedMonth
+
+                );
+
+            });
 
 
+        // Sort by date
         currentReportRecords.sort(
-            (a, b) =>
-                a.date.localeCompare(
+            function (a, b) {
+
+                return a.date.localeCompare(
                     b.date
-                )
+                );
+
+            }
         );
 
 
+        // Display
         displayReport(
             currentReportRecords
         );
 
 
+        // Calculate totals
         calculateReportSummary(
             currentReportRecords
         );
@@ -121,14 +150,17 @@ async function loadMonthlyReport() {
     catch (error) {
 
         console.error(
-            "Report error:",
+            "Monthly report error:",
             error
+        );
+
+        alert(
+            "Unable to load monthly report."
         );
 
     }
 
 }
-
 
 
 // ============================================
@@ -144,6 +176,11 @@ function displayReport(records) {
 
 
     if (!table) {
+
+        console.error(
+            "reportTable not found."
+        );
+
         return;
     }
 
@@ -151,6 +188,7 @@ function displayReport(records) {
     table.innerHTML = "";
 
 
+    // No records
     if (records.length === 0) {
 
         table.innerHTML = `
@@ -160,8 +198,8 @@ function displayReport(records) {
                 <td colspan="5"
                     style="text-align:center;">
 
-                    No records found for
-                    selected month.
+                    No OT records found
+                    for this month.
 
                 </td>
 
@@ -170,165 +208,192 @@ function displayReport(records) {
         `;
 
         return;
+    }
+
+
+    // Create rows
+    records.forEach(function (record) {
+
+        const row =
+            document.createElement("tr");
+
+
+        row.innerHTML = `
+
+            <td>
+                ${escapeHTML(record.date)}
+            </td>
+
+            <td>
+                ${Number(record.otHours) || 0}
+            </td>
+
+            <td>
+                ${escapeHTML(
+                    record.extraDuty || "-"
+                )}
+            </td>
+
+            <td>
+                ${Number(record.extraHours) || 0}
+            </td>
+
+            <td>
+                ${escapeHTML(
+                    record.remarks || "-"
+                )}
+            </td>
+
+        `;
+
+
+        table.appendChild(row);
+
+    });
+
+}
+
+
+// ============================================
+// CALCULATE SUMMARY
+// ============================================
+
+function calculateReportSummary(records) {
+
+    let totalOT = 0;
+    let totalExtra = 0;
+
+
+    records.forEach(function (record) {
+
+        totalOT +=
+            Number(record.otHours) || 0;
+
+
+        totalExtra +=
+            Number(record.extraHours) || 0;
+
+    });
+
+
+    // Total OT
+    const totalOTElement =
+        document.getElementById(
+            "totalOT"
+        );
+
+
+    if (totalOTElement) {
+
+        totalOTElement.textContent =
+            totalOT;
 
     }
 
 
-
-    records.forEach(
-        record => {
-
-            const row =
-                document.createElement(
-                    "tr"
-                );
+    // Total Extra
+    const totalExtraElement =
+        document.getElementById(
+            "totalExtra"
+        );
 
 
-            row.innerHTML = `
+    if (totalExtraElement) {
 
-                <td>
-                    ${record.date}
-                </td>
+        totalExtraElement.textContent =
+            totalExtra;
 
-                <td>
-                    ${record.otHours}
-                </td>
-
-                <td>
-                    ${escapeHTML(
-                        record.extraDuty || "-"
-                    )}
-                </td>
-
-                <td>
-                    ${record.extraHours}
-                </td>
-
-                <td>
-                    ${escapeHTML(
-                        record.remarks || "-"
-                    )}
-                </td>
-
-            `;
+    }
 
 
-            table.appendChild(row);
+    // Total Records
+    const totalRecordsElement =
+        document.getElementById(
+            "totalRecords"
+        );
 
-        }
-    );
+
+    if (totalRecordsElement) {
+
+        totalRecordsElement.textContent =
+            records.length;
+
+    }
 
 }
 
 
-
 // ============================================
-// SUMMARY
-// ============================================
-
-function calculateReportSummary(
-    records
-) {
-
-    let totalOT = 0;
-
-    let totalExtra = 0;
-
-
-    records.forEach(
-        record => {
-
-            totalOT +=
-                Number(
-                    record.otHours
-                ) || 0;
-
-
-            totalExtra +=
-                Number(
-                    record.extraHours
-                ) || 0;
-
-        }
-    );
-
-
-    document.getElementById(
-        "totalOT"
-    ).textContent =
-        totalOT;
-
-
-    document.getElementById(
-        "totalExtra"
-    ).textContent =
-        totalExtra;
-
-
-    document.getElementById(
-        "totalRecords"
-    ).textContent =
-        records.length;
-
-}
-
-
-
-// ============================================
-// DOWNLOAD EXCEL-COMPATIBLE CSV
+// DOWNLOAD EXCEL REPORT
 // ============================================
 
 function downloadExcel() {
 
     if (
+        !currentReportRecords ||
         currentReportRecords.length === 0
     ) {
 
         alert(
-            "Please load a report first."
+            "No records available to download."
         );
 
         return;
-
     }
 
 
-    const month =
+    const monthElement =
         document.getElementById(
             "month"
-        ).value;
+        );
+
+
+    const selectedMonth =
+        monthElement
+            ? monthElement.value
+            : "";
 
 
     const rows = [];
 
 
+    // Header
     rows.push([
+
         "Employee ID",
         "Employee Name",
+        "Department",
+        "Designation",
         "Date",
         "OT Hours",
         "Extra Duty",
         "Extra Duty Hours",
         "Remarks"
+
     ]);
 
 
+    // Data
     currentReportRecords.forEach(
-        record => {
+        function (record) {
 
             rows.push([
 
-                record.employeeId,
+                record.employeeId || "",
 
-                record.employeeName,
+                record.employeeName || "",
 
-                record.date,
+                reportEmployee.department || "",
 
-                record.otHours,
+                reportEmployee.designation || "",
+
+                record.date || "",
+
+                Number(record.otHours) || 0,
 
                 record.extraDuty || "",
 
-                record.extraHours,
+                Number(record.extraHours) || 0,
 
                 record.remarks || ""
 
@@ -338,18 +403,24 @@ function downloadExcel() {
     );
 
 
+    // Convert to CSV
     const csv =
         rows
-            .map(
-                row =>
-                    row.map(
-                        value =>
-                            csvEscape(value)
-                    ).join(",")
-            )
+            .map(function (row) {
+
+                return row
+                    .map(function (value) {
+
+                        return csvEscape(value);
+
+                    })
+                    .join(",");
+
+            })
             .join("\n");
 
 
+    // Create file
     const blob =
         new Blob(
             [
@@ -363,43 +434,33 @@ function downloadExcel() {
 
 
     const url =
-        URL.createObjectURL(
-            blob
-        );
+        URL.createObjectURL(blob);
 
 
+    // Create download link
     const link =
-        document.createElement(
-            "a"
-        );
+        document.createElement("a");
 
 
     link.href = url;
 
 
     link.download =
-        `${reportEmployee.employeeId}_${month}_OT_Report.csv`;
+        `${reportEmployee.employeeId}_${selectedMonth}_OT_Report.csv`;
 
 
-    document.body.appendChild(
-        link
-    );
+    document.body.appendChild(link);
 
 
     link.click();
 
 
-    document.body.removeChild(
-        link
-    );
+    document.body.removeChild(link);
 
 
-    URL.revokeObjectURL(
-        url
-    );
+    URL.revokeObjectURL(url);
 
 }
-
 
 
 // ============================================
@@ -408,8 +469,10 @@ function downloadExcel() {
 
 function csvEscape(value) {
 
-    if (value === null ||
-        value === undefined) {
+    if (
+        value === null ||
+        value === undefined
+    ) {
 
         return "";
 
@@ -420,10 +483,12 @@ function csvEscape(value) {
         String(value);
 
 
+    // If comma, quote or new line exists
     if (
         text.includes(",") ||
         text.includes('"') ||
-        text.includes("\n")
+        text.includes("\n") ||
+        text.includes("\r")
     ) {
 
         return (
@@ -441,7 +506,6 @@ function csvEscape(value) {
     return text;
 
 }
-
 
 
 // ============================================
