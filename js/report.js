@@ -1,106 +1,141 @@
+// ============================================
+// MONTHLY REPORT
+// ============================================
+
 let reportEmployee = null;
-
-let reportRecords = [];
-
-
-// ========================================
-// INITIALIZE
-// ========================================
-
-async function initializeReport() {
-
-    reportEmployee =
-        await checkLogin();
+let currentReportRecords = [];
 
 
-    if (!reportEmployee) {
 
-        return;
-    }
+document.addEventListener(
+    "DOMContentLoaded",
+    async function () {
+
+        reportEmployee =
+            requireLogin();
 
 
-    const monthInput =
+        if (!reportEmployee) {
+            return;
+        }
+
+
         document.getElementById(
-            "month"
-        );
+            "reportEmployeeName"
+        ).textContent =
+            reportEmployee.name;
 
 
-    const today =
-        new Date();
+        document.getElementById(
+            "reportEmployeeId"
+        ).textContent =
+            reportEmployee.employeeId;
 
 
-    const defaultMonth =
-        today.getFullYear() +
-        "-" +
-        String(
-            today.getMonth() + 1
-        ).padStart(
-            2,
-            "0"
-        );
+        const month =
+            document.getElementById(
+                "month"
+            );
 
 
-    monthInput.value =
-        defaultMonth;
+        if (month) {
+
+            month.value =
+                new Date()
+                    .toISOString()
+                    .substring(0, 7);
+
+        }
 
 
-    await loadMonthlyReport();
-}
+        await loadMonthlyReport();
+
+    }
+);
 
 
-// ========================================
+
+// ============================================
 // LOAD REPORT
-// ========================================
+// ============================================
 
 async function loadMonthlyReport() {
 
-    if (!reportEmployee) {
+    try {
 
-        return;
-    }
-
-
-    const month =
-        document.getElementById(
-            "month"
-        ).value;
+        const month =
+            document.getElementById(
+                "month"
+            ).value;
 
 
-    if (!month) {
+        if (!month) {
 
-        alert(
-            "Please select month."
-        );
+            alert(
+                "Please select a month."
+            );
 
-        return;
-    }
+            return;
 
-
-    const records =
-        await getRecordsByMonth(
-            month
-        );
+        }
 
 
-    reportRecords =
-        records.filter(
-            record =>
-                Number(
-                    record.employeeId
-                ) ===
-                Number(
-                    reportEmployee.id
+        const records =
+            await getAllRecords();
+
+
+        currentReportRecords =
+            records.filter(
+                record =>
+
+                    String(
+                        record.employeeId
+                    ) === String(
+                        reportEmployee.employeeId
+                    )
+
+                    &&
+
+                    record.month === month
+            );
+
+
+        currentReportRecords.sort(
+            (a, b) =>
+                a.date.localeCompare(
+                    b.date
                 )
         );
 
 
-    reportRecords.sort(
-        (a, b) =>
-            a.date.localeCompare(
-                b.date
-            )
-    );
+        displayReport(
+            currentReportRecords
+        );
 
+
+        calculateReportSummary(
+            currentReportRecords
+        );
+
+    }
+    catch (error) {
+
+        console.error(
+            "Report error:",
+            error
+        );
+
+    }
+
+}
+
+
+
+// ============================================
+// DISPLAY REPORT
+// ============================================
+
+function displayReport(records) {
 
     const table =
         document.getElementById(
@@ -109,7 +144,6 @@ async function loadMonthlyReport() {
 
 
     if (!table) {
-
         return;
     }
 
@@ -117,25 +151,32 @@ async function loadMonthlyReport() {
     table.innerHTML = "";
 
 
-    let totalOT = 0;
+    if (records.length === 0) {
 
-    let totalExtra = 0;
+        table.innerHTML = `
+
+            <tr>
+
+                <td colspan="5"
+                    style="text-align:center;">
+
+                    No records found for
+                    selected month.
+
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
 
 
-    reportRecords.forEach(
+
+    records.forEach(
         record => {
-
-            totalOT +=
-                Number(
-                    record.otHours || 0
-                );
-
-
-            totalExtra +=
-                Number(
-                    record.extraHours || 0
-                );
-
 
             const row =
                 document.createElement(
@@ -150,27 +191,63 @@ async function loadMonthlyReport() {
                 </td>
 
                 <td>
-                    ${record.otHours || 0}
+                    ${record.otHours}
                 </td>
 
                 <td>
-                    ${record.extraDuty || "-"}
+                    ${escapeHTML(
+                        record.extraDuty || "-"
+                    )}
                 </td>
 
                 <td>
-                    ${record.extraHours || 0}
+                    ${record.extraHours}
                 </td>
 
                 <td>
-                    ${record.remarks || "-"}
+                    ${escapeHTML(
+                        record.remarks || "-"
+                    )}
                 </td>
 
             `;
 
 
-            table.appendChild(
-                row
-            );
+            table.appendChild(row);
+
+        }
+    );
+
+}
+
+
+
+// ============================================
+// SUMMARY
+// ============================================
+
+function calculateReportSummary(
+    records
+) {
+
+    let totalOT = 0;
+
+    let totalExtra = 0;
+
+
+    records.forEach(
+        record => {
+
+            totalOT +=
+                Number(
+                    record.otHours
+                ) || 0;
+
+
+            totalExtra +=
+                Number(
+                    record.extraHours
+                ) || 0;
 
         }
     );
@@ -179,31 +256,40 @@ async function loadMonthlyReport() {
     document.getElementById(
         "totalOT"
     ).textContent =
-        totalOT.toFixed(2);
+        totalOT;
 
 
     document.getElementById(
         "totalExtra"
     ).textContent =
-        totalExtra.toFixed(2);
+        totalExtra;
+
+
+    document.getElementById(
+        "totalRecords"
+    ).textContent =
+        records.length;
+
 }
 
 
-// ========================================
-// EXCEL DOWNLOAD
-// ========================================
+
+// ============================================
+// DOWNLOAD EXCEL-COMPATIBLE CSV
+// ============================================
 
 function downloadExcel() {
 
     if (
-        reportRecords.length === 0
+        currentReportRecords.length === 0
     ) {
 
         alert(
-            "No records found for this month."
+            "Please load a report first."
         );
 
         return;
+
     }
 
 
@@ -213,194 +299,65 @@ function downloadExcel() {
         ).value;
 
 
-    let totalOT = 0;
-
-    let totalExtra = 0;
+    const rows = [];
 
 
-    let rows = "";
+    rows.push([
+        "Employee ID",
+        "Employee Name",
+        "Date",
+        "OT Hours",
+        "Extra Duty",
+        "Extra Duty Hours",
+        "Remarks"
+    ]);
 
 
-    reportRecords.forEach(
+    currentReportRecords.forEach(
         record => {
 
-            totalOT +=
-                Number(
-                    record.otHours || 0
-                );
+            rows.push([
 
+                record.employeeId,
 
-            totalExtra +=
-                Number(
-                    record.extraHours || 0
-                );
+                record.employeeName,
 
+                record.date,
 
-            rows += `
+                record.otHours,
 
-                <tr>
+                record.extraDuty || "",
 
-                    <td>
-                        ${record.date}
-                    </td>
+                record.extraHours,
 
-                    <td>
-                        ${reportEmployee.employeeId}
-                    </td>
+                record.remarks || ""
 
-                    <td>
-                        ${reportEmployee.name}
-                    </td>
+            ]);
 
-                    <td>
-                        ${record.otHours || 0}
-                    </td>
-
-                    <td>
-                        ${record.extraDuty || ""}
-                    </td>
-
-                    <td>
-                        ${record.extraHours || 0}
-                    </td>
-
-                    <td>
-                        ${record.remarks || ""}
-                    </td>
-
-                </tr>
-
-            `;
         }
     );
 
 
-    const html = `
-
-    <html>
-
-    <head>
-
-        <meta charset="UTF-8">
-
-        <style>
-
-            table {
-
-                border-collapse:
-                    collapse;
-
-                width:
-                    100%;
-            }
-
-
-            th,
-            td {
-
-                border:
-                    1px solid #000;
-
-                padding:
-                    8px;
-            }
-
-
-            th {
-
-                font-weight:
-                    bold;
-            }
-
-        </style>
-
-    </head>
-
-
-    <body>
-
-        <h2>
-            Office OT Register
-        </h2>
-
-
-        <p>
-            Employee ID:
-            ${reportEmployee.employeeId}
-        </p>
-
-
-        <p>
-            Employee:
-            ${reportEmployee.name}
-        </p>
-
-
-        <p>
-            Month:
-            ${month}
-        </p>
-
-
-        <table>
-
-            <tr>
-
-                <th>Date</th>
-
-                <th>Employee ID</th>
-
-                <th>Employee</th>
-
-                <th>OT Hours</th>
-
-                <th>Extra Duty</th>
-
-                <th>Extra Hours</th>
-
-                <th>Remarks</th>
-
-            </tr>
-
-
-            ${rows}
-
-
-            <tr>
-
-                <th colspan="3">
-                    TOTAL
-                </th>
-
-                <th>
-                    ${totalOT.toFixed(2)}
-                </th>
-
-                <th></th>
-
-                <th>
-                    ${totalExtra.toFixed(2)}
-                </th>
-
-                <th></th>
-
-            </tr>
-
-        </table>
-
-    </body>
-
-    </html>
-
-    `;
+    const csv =
+        rows
+            .map(
+                row =>
+                    row.map(
+                        value =>
+                            csvEscape(value)
+                    ).join(",")
+            )
+            .join("\n");
 
 
     const blob =
         new Blob(
-            [html],
+            [
+                "\uFEFF" + csv
+            ],
             {
                 type:
-                    "application/vnd.ms-excel"
+                    "text/csv;charset=utf-8;"
             }
         );
 
@@ -417,12 +374,11 @@ function downloadExcel() {
         );
 
 
-    link.href =
-        url;
+    link.href = url;
 
 
     link.download =
-        `OT_${reportEmployee.employeeId}_${month}.xls`;
+        `${reportEmployee.employeeId}_${month}_OT_Report.csv`;
 
 
     document.body.appendChild(
@@ -441,21 +397,84 @@ function downloadExcel() {
     URL.revokeObjectURL(
         url
     );
+
 }
 
 
-// ========================================
-// MONTH CHANGE
-// ========================================
 
-document
-    .getElementById(
-        "month"
-    )
-    ?.addEventListener(
-        "change",
-        loadMonthlyReport
-    );
+// ============================================
+// CSV ESCAPE
+// ============================================
+
+function csvEscape(value) {
+
+    if (value === null ||
+        value === undefined) {
+
+        return "";
+
+    }
 
 
-initializeReport();
+    const text =
+        String(value);
+
+
+    if (
+        text.includes(",") ||
+        text.includes('"') ||
+        text.includes("\n")
+    ) {
+
+        return (
+            '"' +
+            text.replace(
+                /"/g,
+                '""'
+            ) +
+            '"'
+        );
+
+    }
+
+
+    return text;
+
+}
+
+
+
+// ============================================
+// HTML ESCAPE
+// ============================================
+
+function escapeHTML(value) {
+
+    return String(value)
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
