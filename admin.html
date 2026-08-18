@@ -3,255 +3,236 @@
 
 <head>
 
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
-<title>Admin Settings</title>
+    <title>Admin Settings</title>
 
-<link rel="stylesheet"
-      href="css/style.css">
+    <link rel="stylesheet"
+          href="css/style.css">
 
 </head>
 
 <body>
 
+
 <header class="topbar">
 
-<h1>Admin Settings</h1>
+    <div>
+
+        <h2>Admin Module</h2>
+
+        <span>
+            Office Rules & Settings
+        </span>
+
+    </div>
+
+
+    <button
+        onclick="logout()"
+        class="logout-btn">
+
+        Logout
+
+    </button>
 
 </header>
 
-<div class="container">
 
-<a href="index.html">
-← Dashboard
-</a>
-
-<h2>Working Hour Settings</h2>
-
-<form id="settingsForm">
-
-<label>
-Normal Working Start
-</label>
-
-<input
-type="time"
-id="startTime"
-required
->
+<main class="container">
 
 
-<label>
-Normal Working End
-</label>
+    <a href="dashboard.html"
+       class="back-link">
 
-<input
-type="time"
-id="endTime"
-required
->
+        ← Dashboard
+
+    </a>
 
 
-<label>
-Normal Working Hours
-</label>
-
-<input
-type="number"
-id="normalHours"
-step="0.5"
-min="0"
-required
->
+    <div class="form-box wide">
 
 
-<h3>Working Days</h3>
+        <h1>Office Working Rules</h1>
 
-<label>
-<input
-type="checkbox"
-value="Monday"
-class="workingDay"
->
-Monday
-</label>
 
-<label>
-<input
-type="checkbox"
-value="Tuesday"
-class="workingDay"
->
-Tuesday
-</label>
+        <p class="subtitle">
 
-<label>
-<input
-type="checkbox"
-value="Wednesday"
-class="workingDay"
->
-Wednesday
-</label>
+            These settings are stored
+            locally on this device.
 
-<label>
-<input
-type="checkbox"
-value="Thursday"
-class="workingDay"
->
-Thursday
-</label>
+        </p>
 
-<label>
-<input
-type="checkbox"
-value="Friday"
-class="workingDay"
->
-Friday
-</label>
 
-<label>
-<input
-type="checkbox"
-value="Saturday"
-class="workingDay"
->
-Saturday
-</label>
+        <form id="settingsForm">
 
-<label>
-<input
-type="checkbox"
-value="Sunday"
-class="workingDay"
->
-Sunday
-</label>
 
-<br>
+            <label for="startTime">
 
-<button type="submit">
-Save Settings
-</button>
+                Normal Working Start Time
 
-</form>
+            </label>
 
-<p id="message"></p>
+            <input
+                type="time"
+                id="startTime"
+            >
 
-</div>
+
+            <label for="endTime">
+
+                Normal Working End Time
+
+            </label>
+
+            <input
+                type="time"
+                id="endTime"
+            >
+
+
+            <label for="normalHours">
+
+                Normal Working Hours
+
+            </label>
+
+            <input
+                type="number"
+                id="normalHours"
+                min="0"
+                step="0.5"
+                placeholder="Example: 8"
+            >
+
+
+            <h3>
+                Working Days
+            </h3>
+
+
+            <div class="days-grid">
+
+
+                <label class="check-label">
+
+                    <input
+                        type="checkbox"
+                        class="workingDay"
+                        value="Monday"
+                    >
+
+                    Monday
+
+                </label>
+
+
+                <label class="check-label">
+
+                    <input
+                        type="checkbox"
+                        class="workingDay"
+                        value="Tuesday"
+                    >
+
+                    Tuesday
+
+                </label>
+
+
+                <label class="check-label">
+
+                    <input
+                        type="checkbox"
+                        class="workingDay"
+                        value="Wednesday"
+                    >
+
+                    Wednesday
+
+                </label>
+
+
+                <label class="check-label">
+
+                    <input
+                        type="checkbox"
+                        class="workingDay"
+                        value="Thursday"
+                    >
+
+                    Thursday
+
+                </label>
+
+
+                <label class="check-label">
+
+                    <input
+                        type="checkbox"
+                        class="workingDay"
+                        value="Friday"
+                    >
+
+                    Friday
+
+                </label>
+
+
+                <label class="check-label">
+
+                    <input
+                        type="checkbox"
+                        class="workingDay"
+                        value="Saturday"
+                    >
+
+                    Saturday
+
+                </label>
+
+
+                <label class="check-label">
+
+                    <input
+                        type="checkbox"
+                        class="workingDay"
+                        value="Sunday"
+                    >
+
+                    Sunday
+
+                </label>
+
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="primary-btn">
+
+                💾 Save Office Settings
+
+            </button>
+
+
+        </form>
+
+
+    </div>
+
+
+</main>
+
 
 <script src="js/db.js"></script>
 
-<script>
+<script src="js/admin.js"></script>
 
-async function loadSettings() {
-
-    const settings =
-        await getSetting("officeSettings");
-
-    if (!settings) {
-
-        return;
-    }
-
-    document.getElementById(
-        "startTime"
-    ).value = settings.startTime || "";
-
-    document.getElementById(
-        "endTime"
-    ).value = settings.endTime || "";
-
-    document.getElementById(
-        "normalHours"
-    ).value = settings.normalHours || "";
-
-    document
-        .querySelectorAll(".workingDay")
-        .forEach(checkbox => {
-
-            checkbox.checked =
-                settings.workingDays
-                ?.includes(
-                    checkbox.value
-                ) || false;
-
-        });
-}
-
-
-document
-.getElementById("settingsForm")
-.addEventListener(
-    "submit",
-    async function(event) {
-
-        event.preventDefault();
-
-        const workingDays = [];
-
-        document
-        .querySelectorAll(".workingDay")
-        .forEach(checkbox => {
-
-            if (checkbox.checked) {
-
-                workingDays.push(
-                    checkbox.value
-                );
-
-            }
-
-        });
-
-
-        const settings = {
-
-            startTime:
-                document.getElementById(
-                    "startTime"
-                ).value,
-
-            endTime:
-                document.getElementById(
-                    "endTime"
-                ).value,
-
-            normalHours:
-                Number(
-                    document.getElementById(
-                        "normalHours"
-                    ).value
-                ),
-
-            workingDays:
-                workingDays
-        };
-
-
-        await saveSetting(
-            "officeSettings",
-            settings
-        );
-
-
-        document.getElementById(
-            "message"
-        ).textContent =
-            "Settings saved successfully.";
-
-    }
-);
-
-
-loadSettings();
-
-</script>
 
 </body>
 
