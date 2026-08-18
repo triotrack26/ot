@@ -1,295 +1,371 @@
-<!DOCTYPE html>
-<html lang="en">
+// ============================================
+// OT HISTORY
+// ============================================
 
-<head>
+let historyEmployee = null;
 
-    <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+document.addEventListener(
+    "DOMContentLoaded",
+    async function () {
 
-    <title>OT History</title>
+        historyEmployee =
+            requireLogin();
 
-    <link rel="stylesheet"
-          href="css/style.css">
 
-</head>
+        if (!historyEmployee) {
+            return;
+        }
 
 
-<body>
+        const name =
+            document.getElementById(
+                "employeeNameHistory"
+            );
 
 
-<header class="topbar">
+        if (name) {
 
-    <div>
+            name.textContent =
+                historyEmployee.name;
 
-        <h2>
-            OT History
-        </h2>
+        }
 
-        <span id="employeeName">
-            Employee
-        </span>
 
-    </div>
+        const monthInput =
+            document.getElementById(
+                "historyMonth"
+            );
 
 
-    <button
-        type="button"
-        onclick="logout()"
-        class="logout-btn">
+        if (monthInput) {
 
-        Logout
+            monthInput.value =
+                new Date()
+                    .toISOString()
+                    .substring(0, 7);
 
-    </button>
+        }
 
-</header>
 
+        await loadHistory();
 
+    }
+);
 
-<main class="container">
 
 
-    <a
-        href="dashboard.html"
-        class="back-link">
+// ============================================
+// LOAD HISTORY
+// ============================================
 
-        ← Dashboard
+async function loadHistory() {
 
-    </a>
+    try {
 
+        const month =
+            document.getElementById(
+                "historyMonth"
+            ).value;
 
 
-    <!-- EMPLOYEE -->
+        const records =
+            await getAllRecords();
 
-    <div class="welcome">
 
-        <p>
-            Employee
-        </p>
+        let filtered =
+            records.filter(
+                record =>
 
-        <h1 id="employeeNameHistory">
-            Loading...
-        </h1>
+                    String(
+                        record.employeeId
+                    ) === String(
+                        historyEmployee.employeeId
+                    )
+            );
 
-    </div>
 
+        if (month) {
 
+            filtered =
+                filtered.filter(
+                    record =>
+                        record.month === month
+                );
 
-    <!-- SUMMARY -->
+        }
 
-    <div class="summary-box">
 
+        filtered.sort(
+            (a, b) =>
+                b.date.localeCompare(
+                    a.date
+                )
+        );
 
-        <h2>
-            My OT Summary
-        </h2>
 
+        displayHistory(
+            filtered
+        );
 
 
-        <div class="summary-items">
+        calculateHistorySummary(
+            filtered
+        );
 
+    }
+    catch (error) {
 
-            <div>
+        console.error(
+            "History error:",
+            error
+        );
 
-                <span>
-                    Total OT
-                </span>
+    }
 
-                <strong>
+}
 
-                    <span id="historyTotalOT">
-                        0
-                    </span>
 
-                    hrs
 
-                </strong>
+// ============================================
+// DISPLAY
+// ============================================
 
-            </div>
+function displayHistory(records) {
 
+    const table =
+        document.getElementById(
+            "historyTable"
+        );
 
 
-            <div>
+    if (!table) {
+        return;
+    }
 
-                <span>
-                    Total Extra Duty
-                </span>
 
-                <strong>
+    table.innerHTML = "";
 
-                    <span id="historyTotalExtra">
-                        0
-                    </span>
 
-                    hrs
+    if (records.length === 0) {
 
-                </strong>
+        table.innerHTML = `
 
-            </div>
+            <tr>
 
+                <td colspan="6"
+                    style="text-align:center;">
 
+                    No records found.
 
-            <div>
+                </td>
 
-                <span>
-                    Total Records
-                </span>
+            </tr>
 
-                <strong>
+        `;
 
-                    <span id="historyTotalRecords">
-                        0
-                    </span>
+        return;
 
-                </strong>
+    }
 
-            </div>
 
 
-        </div>
+    records.forEach(
+        record => {
 
+            const row =
+                document.createElement(
+                    "tr"
+                );
 
-    </div>
 
+            row.innerHTML = `
 
+                <td>
+                    ${record.date}
+                </td>
 
-    <!-- FILTER -->
+                <td>
+                    ${record.otHours}
+                </td>
 
-    <div class="report-controls">
+                <td>
+                    ${escapeHTML(
+                        record.extraDuty || "-"
+                    )}
+                </td>
 
+                <td>
+                    ${record.extraHours}
+                </td>
 
-        <div>
+                <td>
+                    ${escapeHTML(
+                        record.remarks || "-"
+                    )}
+                </td>
 
-            <label for="historyMonth">
+                <td>
 
-                Select Month
+                    <button
+                        onclick="deleteHistoryRecord(${record.id})">
 
-            </label>
+                        Delete
 
+                    </button>
 
-            <input
-                type="month"
-                id="historyMonth"
-            >
+                </td>
 
-        </div>
+            `;
 
 
+            table.appendChild(row);
 
-        <button
-            type="button"
-            onclick="loadHistory()"
-            class="secondary-btn">
+        }
+    );
 
-            🔍 View
+}
 
-        </button>
 
 
+// ============================================
+// SUMMARY
+// ============================================
 
-        <button
-            type="button"
-            onclick="clearHistoryFilter()"
-            class="secondary-btn">
+function calculateHistorySummary(records) {
 
-            Show All
+    let totalOT = 0;
 
-        </button>
+    let totalExtra = 0;
 
 
-    </div>
+    records.forEach(
+        record => {
 
+            totalOT +=
+                Number(
+                    record.otHours
+                ) || 0;
 
 
-    <!-- HISTORY TABLE -->
+            totalExtra +=
+                Number(
+                    record.extraHours
+                ) || 0;
 
-    <div class="table-box">
+        }
+    );
 
 
-        <h2>
-            OT Records
-        </h2>
+    document.getElementById(
+        "historyTotalOT"
+    ).textContent =
+        totalOT;
 
 
+    document.getElementById(
+        "historyTotalExtra"
+    ).textContent =
+        totalExtra;
 
-        <div class="table-scroll">
 
+    document.getElementById(
+        "historyTotalRecords"
+    ).textContent =
+        records.length;
 
-            <table>
+}
 
 
-                <thead>
 
-                    <tr>
+// ============================================
+// DELETE
+// ============================================
 
-                        <th>
-                            Date
-                        </th>
+async function deleteHistoryRecord(id) {
 
-                        <th>
-                            OT Hours
-                        </th>
+    if (
+        !confirm(
+            "Delete this OT record?"
+        )
+    ) {
 
-                        <th>
-                            Extra Duty
-                        </th>
+        return;
 
-                        <th>
-                            Extra Hours
-                        </th>
+    }
 
-                        <th>
-                            Remarks
-                        </th>
 
-                        <th>
-                            Action
-                        </th>
+    try {
 
-                    </tr>
+        await deleteRecord(id);
 
-                </thead>
+        await loadHistory();
 
+    }
+    catch (error) {
 
+        console.error(
+            error
+        );
 
-                <tbody id="historyTable">
+        alert(
+            "Unable to delete record."
+        );
 
-                    <tr>
+    }
 
-                        <td
-                            colspan="6"
-                            style="text-align:center;">
+}
 
-                            Loading records...
 
-                        </td>
 
-                    </tr>
+// ============================================
+// SHOW ALL
+// ============================================
 
-                </tbody>
+async function clearHistoryFilter() {
 
+    document.getElementById(
+        "historyMonth"
+    ).value = "";
 
-            </table>
 
+    await loadHistory();
 
-        </div>
+}
 
 
-    </div>
 
+// ============================================
+// ESCAPE
+// ============================================
 
-</main>
+function escapeHTML(value) {
 
+    return String(value)
 
+        .replace(
+            /&/g,
+            "&amp;"
+        )
 
-<script src="js/db.js"></script>
+        .replace(
+            /</g,
+            "&lt;"
+        )
 
-<script src="js/auth.js"></script>
+        .replace(
+            />/g,
+            "&gt;"
+        )
 
-<script src="js/history.js"></script>
+        .replace(
+            /"/g,
+            "&quot;"
+        )
 
+        .replace(
+            /'/g,
+            "&#039;"
+        );
 
-</body>
-
-</html>
+}
