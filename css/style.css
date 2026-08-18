@@ -1,3 +1,7 @@
+/* ==========================================
+   GLOBAL
+========================================== */
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -21,30 +25,35 @@ body {
 
 
 a {
-
     text-decoration: none;
-
     color: inherit;
 }
 
 
-/* =====================================
+button,
+input,
+textarea {
+    font-family: inherit;
+}
+
+
+/* ==========================================
    LOGIN / HOME
-===================================== */
+========================================== */
 
 .login-box {
 
-    width: 100%;
+    width: 92%;
 
     max-width: 430px;
 
-    margin: 70px auto;
-
-    background: white;
+    margin: 60px auto;
 
     padding: 40px;
 
-    border-radius: 14px;
+    background: white;
+
+    border-radius: 15px;
 
     box-shadow:
         0 8px 30px
@@ -56,17 +65,11 @@ a {
 
 .logo {
 
-    width: 70px;
+    width: 72px;
 
-    height: 70px;
+    height: 72px;
 
     margin: 0 auto 20px;
-
-    background: #1f4e79;
-
-    color: white;
-
-    border-radius: 50%;
 
     display: flex;
 
@@ -74,13 +77,30 @@ a {
 
     justify-content: center;
 
-    font-size: 24px;
+    background: #1f4e79;
+
+    color: white;
+
+    border-radius: 50%;
+
+    font-size: 25px;
 
     font-weight: bold;
 }
 
 
-.login-box h1 {
+.small-logo {
+
+    width: 60px;
+
+    height: 60px;
+
+    font-size: 20px;
+}
+
+
+.login-box h1,
+.form-box h1 {
 
     margin-bottom: 10px;
 }
@@ -90,25 +110,15 @@ a {
 
     color: #777;
 
-    margin-bottom: 30px;
-
     line-height: 1.5;
+
+    margin-bottom: 25px;
 }
 
 
-.home-buttons {
-
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 15px;
-}
-
-
-/* =====================================
+/* ==========================================
    BUTTONS
-===================================== */
+========================================== */
 
 .primary-btn,
 .secondary-btn,
@@ -116,17 +126,17 @@ a {
 
     display: inline-block;
 
+    padding: 12px 18px;
+
     border: none;
-
-    cursor: pointer;
-
-    padding: 13px 20px;
 
     border-radius: 8px;
 
     font-size: 15px;
 
     font-weight: bold;
+
+    cursor: pointer;
 
     text-align: center;
 }
@@ -148,9 +158,15 @@ a {
 
 .secondary-btn {
 
-    background: #e8eef5;
+    background: #e7edf4;
 
     color: #1f4e79;
+}
+
+
+.secondary-btn:hover {
+
+    background: #dce5ef;
 }
 
 
@@ -159,6 +175,28 @@ a {
     background: #dc3545;
 
     color: white;
+}
+
+
+.logout-btn:hover {
+
+    opacity: 0.9;
+}
+
+
+/* ==========================================
+   HOME BUTTONS
+========================================== */
+
+.home-buttons {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 14px;
+
+    margin-top: 25px;
 }
 
 
@@ -172,23 +210,23 @@ a {
 }
 
 
-/* =====================================
+/* ==========================================
    FORM
-===================================== */
+========================================== */
 
 .form-box {
 
-    width: 100%;
+    width: 92%;
 
-    max-width: 500px;
+    max-width: 520px;
 
     margin: 40px auto;
 
-    background: white;
-
     padding: 35px;
 
-    border-radius: 14px;
+    background: white;
+
+    border-radius: 15px;
 
     box-shadow:
         0 8px 30px
@@ -199,12 +237,6 @@ a {
 .form-box.wide {
 
     max-width: 750px;
-}
-
-
-.form-box h1 {
-
-    margin-bottom: 10px;
 }
 
 
@@ -232,9 +264,15 @@ a {
 
     border-radius: 7px;
 
-    font-size: 15px;
-
     outline: none;
+
+    font-size: 15px;
+}
+
+
+.form-box textarea {
+
+    resize: vertical;
 }
 
 
@@ -245,7 +283,7 @@ a {
 }
 
 
-.form-box button {
+.form-box .primary-btn {
 
     width: 100%;
 
@@ -283,21 +321,24 @@ a {
 }
 
 
-/* =====================================
+/* ==========================================
    TOPBAR
-===================================== */
+========================================== */
 
 .topbar {
 
     background: white;
 
-    padding: 18px 5%;
+    padding:
+        17px 5%;
 
     display: flex;
 
     align-items: center;
 
     justify-content: space-between;
+
+    gap: 20px;
 
     box-shadow:
         0 2px 10px
@@ -319,9 +360,9 @@ a {
 }
 
 
-/* =====================================
+/* ==========================================
    CONTAINER
-===================================== */
+========================================== */
 
 .container {
 
@@ -347,9 +388,9 @@ a {
 }
 
 
-/* =====================================
-   CARDS
-===================================== */
+/* ==========================================
+   DASHBOARD CARDS
+========================================== */
 
 .cards {
 
@@ -406,9 +447,9 @@ a {
 }
 
 
-/* =====================================
+/* ==========================================
    MENU
-===================================== */
+========================================== */
 
 .section-title {
 
@@ -439,18 +480,19 @@ a {
         0 4px 15px
         rgba(0, 0, 0, 0.06);
 
-    transition: 0.2s;
+    transition:
+        transform 0.2s;
 }
 
 
 .menu-card:hover {
 
     transform:
-        translateY(-3px);
+        translateY(-4px);
 }
 
 
-.menu-card span {
+.menu-card > span {
 
     font-size: 30px;
 }
@@ -473,9 +515,9 @@ a {
 }
 
 
-/* =====================================
+/* ==========================================
    SUMMARY
-===================================== */
+========================================== */
 
 .summary-box {
 
@@ -499,11 +541,17 @@ a {
 }
 
 
+.summary-box > p {
+
+    margin-bottom: 10px;
+}
+
+
 .summary-items {
 
     display: flex;
 
-    gap: 50px;
+    gap: 45px;
 
     flex-wrap: wrap;
 }
@@ -533,9 +581,9 @@ a {
 }
 
 
-/* =====================================
+/* ==========================================
    TABLE
-===================================== */
+========================================== */
 
 .table-box {
 
@@ -569,20 +617,19 @@ table {
 
     width: 100%;
 
-    border-collapse:
-        collapse;
+    border-collapse: collapse;
 
-    min-width: 700px;
+    min-width: 750px;
 }
 
 
 th,
 td {
 
+    padding: 12px;
+
     border-bottom:
         1px solid #ddd;
-
-    padding: 12px;
 
     text-align: left;
 
@@ -606,7 +653,7 @@ td button {
 
     color: white;
 
-    padding: 7px 10px;
+    padding: 7px 11px;
 
     border-radius: 5px;
 
@@ -614,9 +661,17 @@ td button {
 }
 
 
-/* =====================================
-   ADMIN DAYS
-===================================== */
+/* ==========================================
+   ADMIN
+========================================== */
+
+.settings-heading {
+
+    margin-top: 30px;
+
+    margin-bottom: 12px;
+}
+
 
 .days-grid {
 
@@ -627,7 +682,7 @@ td button {
 
     gap: 10px;
 
-    margin-top: 15px;
+    margin-top: 10px;
 }
 
 
@@ -640,6 +695,10 @@ td button {
     border-radius: 7px;
 
     cursor: pointer;
+
+    font-weight: normal !important;
+
+    margin: 0 !important;
 }
 
 
@@ -651,9 +710,17 @@ td button {
 }
 
 
-/* =====================================
-   REPORT
-===================================== */
+.settings-display {
+
+    line-height: 1.8;
+
+    color: #555;
+}
+
+
+/* ==========================================
+   REPORT CONTROLS
+========================================== */
 
 .report-controls {
 
@@ -667,11 +734,21 @@ td button {
 
     display: flex;
 
-    gap: 15px;
-
     align-items: end;
 
+    gap: 15px;
+
     flex-wrap: wrap;
+
+    box-shadow:
+        0 4px 15px
+        rgba(0, 0, 0, 0.06);
+}
+
+
+.report-controls > div {
+
+    min-width: 220px;
 }
 
 
@@ -687,6 +764,8 @@ td button {
 
 .report-controls input {
 
+    width: 100%;
+
     padding: 12px;
 
     border:
@@ -696,11 +775,11 @@ td button {
 }
 
 
-/* =====================================
+/* ==========================================
    MOBILE
-===================================== */
+========================================== */
 
-@media (max-width: 800px) {
+@media (max-width: 900px) {
 
     .menu-grid {
 
@@ -716,12 +795,18 @@ td button {
     .login-box,
     .form-box {
 
+        width: 94%;
+
         margin:
             20px auto;
 
         padding: 25px;
+    }
 
-        width: 92%;
+
+    .container {
+
+        width: 94%;
     }
 
 
@@ -739,6 +824,13 @@ td button {
     }
 
 
+    .days-grid {
+
+        grid-template-columns:
+            1fr 1fr;
+    }
+
+
     .topbar {
 
         padding:
@@ -752,19 +844,6 @@ td button {
     }
 
 
-    .container {
-
-        width: 94%;
-    }
-
-
-    .days-grid {
-
-        grid-template-columns:
-            1fr 1fr;
-    }
-
-
     .summary-items {
 
         gap: 25px;
@@ -773,11 +852,16 @@ td button {
 
     .report-controls {
 
+        flex-direction: column;
+
         align-items:
             stretch;
+    }
 
-        flex-direction:
-            column;
+
+    .report-controls > div {
+
+        min-width: 100%;
     }
 
 
