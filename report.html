@@ -8,12 +8,13 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>Monthly Report</title>
+    <title>Monthly Report - Office OT Register</title>
 
     <link rel="stylesheet"
           href="css/style.css">
 
 </head>
+
 
 <body>
 
@@ -22,16 +23,19 @@
 
     <div>
 
-        <h2>Monthly Report</h2>
+        <h2>
+            Office OT Register
+        </h2>
 
         <span>
-            OT & Extra Duty Report
+            Monthly OT Report
         </span>
 
     </div>
 
 
     <button
+        type="button"
         onclick="logout()"
         class="logout-btn">
 
@@ -42,16 +46,21 @@
 </header>
 
 
+
 <main class="container">
 
 
-    <a href="dashboard.html"
-       class="back-link">
+    <a
+        href="dashboard.html"
+        class="back-link">
 
         ← Dashboard
 
     </a>
 
+
+
+    <!-- REPORT CONTROLS -->
 
     <div class="report-controls">
 
@@ -59,8 +68,11 @@
         <div>
 
             <label for="month">
+
                 Select Month
+
             </label>
+
 
             <input
                 type="month"
@@ -70,7 +82,9 @@
         </div>
 
 
+
         <button
+            type="button"
             onclick="loadMonthlyReport()"
             class="secondary-btn">
 
@@ -79,7 +93,9 @@
         </button>
 
 
+
         <button
+            type="button"
             onclick="downloadExcel()"
             class="primary-btn">
 
@@ -91,10 +107,55 @@
     </div>
 
 
+
+    <!-- EMPLOYEE INFORMATION -->
+
     <div class="summary-box">
 
 
-        <h2>Monthly Summary</h2>
+        <h2>
+            Employee
+        </h2>
+
+
+        <p>
+
+            <strong>
+                Name:
+            </strong>
+
+            <span id="reportEmployeeName">
+                -
+            </span>
+
+        </p>
+
+
+        <p>
+
+            <strong>
+                Employee ID:
+            </strong>
+
+            <span id="reportEmployeeId">
+                -
+            </span>
+
+        </p>
+
+
+    </div>
+
+
+
+    <!-- SUMMARY -->
+
+    <div class="summary-box">
+
+
+        <h2>
+            Monthly Summary
+        </h2>
 
 
         <div class="summary-items">
@@ -119,6 +180,7 @@
             </div>
 
 
+
             <div>
 
                 <span>
@@ -138,10 +200,32 @@
             </div>
 
 
+
+            <div>
+
+                <span>
+                    Total Records
+                </span>
+
+                <strong>
+
+                    <span id="totalRecords">
+                        0
+                    </span>
+
+                </strong>
+
+            </div>
+
+
         </div>
+
 
     </div>
 
+
+
+    <!-- REPORT TABLE -->
 
     <div class="table-box">
 
@@ -154,22 +238,40 @@
         <div class="table-scroll">
 
 
-            <table>
+            <table id="reportTableElement">
 
 
                 <thead>
 
                     <tr>
 
-                        <th>Date</th>
+                        <th>
+                            Date
+                        </th>
 
-                        <th>OT Hours</th>
+                        <th>
+                            Employee ID
+                        </th>
 
-                        <th>Extra Duty</th>
+                        <th>
+                            Employee Name
+                        </th>
 
-                        <th>Extra Hours</th>
+                        <th>
+                            OT Hours
+                        </th>
 
-                        <th>Remarks</th>
+                        <th>
+                            Extra Duty
+                        </th>
+
+                        <th>
+                            Extra Hours
+                        </th>
+
+                        <th>
+                            Remarks
+                        </th>
 
                     </tr>
 
@@ -177,6 +279,19 @@
 
 
                 <tbody id="reportTable">
+
+                    <tr>
+
+                        <td
+                            colspan="7"
+                            style="text-align:center;">
+
+                            Select a month
+                            to view records.
+
+                        </td>
+
+                    </tr>
 
                 </tbody>
 
@@ -191,6 +306,7 @@
 
 
 </main>
+
 
 
 <script src="js/db.js"></script>
