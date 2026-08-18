@@ -1,21 +1,15 @@
-// ======================================================
-// OFFICE OT REGISTER
-// EMPLOYEE AUTHENTICATION
-// ======================================================
+// ============================================
+// AUTHENTICATION
+// ============================================
 
 
-// ======================================================
-// PAGE LOAD
-// ======================================================
+// ============================================
+// REGISTER
+// ============================================
 
 document.addEventListener(
     "DOMContentLoaded",
     function () {
-
-
-        // ----------------------------------------------
-        // REGISTER PAGE
-        // ----------------------------------------------
 
         const registerForm =
             document.getElementById(
@@ -32,10 +26,6 @@ document.addEventListener(
 
         }
 
-
-        // ----------------------------------------------
-        // LOGIN PAGE
-        // ----------------------------------------------
 
         const loginForm =
             document.getElementById(
@@ -56,9 +46,10 @@ document.addEventListener(
 );
 
 
-// ======================================================
+
+// ============================================
 // REGISTER EMPLOYEE
-// ======================================================
+// ============================================
 
 async function registerEmployee(event) {
 
@@ -67,96 +58,53 @@ async function registerEmployee(event) {
 
     try {
 
-        // ----------------------------------------------
-        // GET FORM VALUES
-        // ----------------------------------------------
-
         const employeeId =
-            document
-                .getElementById("employeeId")
-                .value
-                .trim()
-                .toUpperCase();
+            document.getElementById(
+                "employeeId"
+            ).value.trim().toUpperCase();
 
 
         const name =
-            document
-                .getElementById("employeeName")
-                .value
-                .trim();
+            document.getElementById(
+                "employeeName"
+            ).value.trim();
 
 
         const department =
-            document
-                .getElementById("department")
-                .value
-                .trim();
+            document.getElementById(
+                "department"
+            ).value.trim();
 
 
         const designation =
-            document
-                .getElementById("designation")
-                .value
-                .trim();
+            document.getElementById(
+                "designation"
+            ).value.trim();
 
 
         const pin =
-            document
-                .getElementById("pin")
-                .value
-                .trim();
+            document.getElementById(
+                "pin"
+            ).value.trim();
 
 
         const confirmPin =
-            document
-                .getElementById("confirmPin")
-                .value
-                .trim();
+            document.getElementById(
+                "confirmPin"
+            ).value.trim();
 
 
 
-        // ----------------------------------------------
-        // VALIDATION
-        // ----------------------------------------------
-
-        if (!employeeId) {
+        if (!employeeId || !name || !pin) {
 
             alert(
-                "Please enter Employee ID."
+                "Please fill all required fields."
             );
 
             return;
+
         }
 
-
-        if (!name) {
-
-            alert(
-                "Please enter employee name."
-            );
-
-            return;
-        }
-
-
-        if (!pin) {
-
-            alert(
-                "Please create a PIN."
-            );
-
-            return;
-        }
-
-
-        if (pin.length < 4) {
-
-            alert(
-                "PIN must contain at least 4 digits."
-            );
-
-            return;
-        }
 
 
         if (pin !== confirmPin) {
@@ -166,34 +114,42 @@ async function registerEmployee(event) {
             );
 
             return;
+
         }
 
 
 
-        // ----------------------------------------------
-        // CHECK EXISTING EMPLOYEE
-        // ----------------------------------------------
+        if (!/^\d{4,8}$/.test(pin)) {
 
-        const existingEmployee =
-            await getEmployeeByEmployeeId(
+            alert(
+                "PIN must contain 4 to 8 digits."
+            );
+
+            return;
+
+        }
+
+
+
+        // Check existing employee
+
+        const existing =
+            await findEmployee(
                 employeeId
             );
 
 
-        if (existingEmployee) {
+        if (existing) {
 
             alert(
                 "This Employee ID is already registered on this device."
             );
 
             return;
+
         }
 
 
-
-        // ----------------------------------------------
-        // CREATE EMPLOYEE
-        // ----------------------------------------------
 
         const employee = {
 
@@ -219,26 +175,16 @@ async function registerEmployee(event) {
 
 
 
-        // ----------------------------------------------
-        // SAVE TO INDEXEDDB
-        // ----------------------------------------------
-
         await addEmployee(
             employee
         );
 
 
 
-        // ----------------------------------------------
-        // SUCCESS
-        // ----------------------------------------------
-
         alert(
             "Employee registered successfully."
         );
 
-
-        // Go to login
 
         window.location.href =
             "login.html";
@@ -261,9 +207,10 @@ async function registerEmployee(event) {
 }
 
 
-// ======================================================
-// LOGIN EMPLOYEE
-// ======================================================
+
+// ============================================
+// LOGIN
+// ============================================
 
 async function loginEmployee(event) {
 
@@ -273,24 +220,17 @@ async function loginEmployee(event) {
     try {
 
         const employeeId =
-            document
-                .getElementById("employeeId")
-                .value
-                .trim()
-                .toUpperCase();
+            document.getElementById(
+                "employeeId"
+            ).value.trim().toUpperCase();
 
 
         const pin =
-            document
-                .getElementById("pin")
-                .value
-                .trim();
+            document.getElementById(
+                "pin"
+            ).value.trim();
 
 
-
-        // ----------------------------------------------
-        // VALIDATION
-        // ----------------------------------------------
 
         if (!employeeId || !pin) {
 
@@ -299,18 +239,16 @@ async function loginEmployee(event) {
             );
 
             return;
+
         }
 
 
 
-        // ----------------------------------------------
-        // FIND EMPLOYEE
-        // ----------------------------------------------
-
         const employee =
-            await getEmployeeByEmployeeId(
+            await findEmployee(
                 employeeId
             );
+
 
 
         if (!employee) {
@@ -320,64 +258,29 @@ async function loginEmployee(event) {
             );
 
             return;
+
         }
 
 
 
-        // ----------------------------------------------
-        // CHECK PIN
-        // ----------------------------------------------
-
-        if (
-            String(employee.pin) !==
-            String(pin)
-        ) {
+        if (employee.pin !== pin) {
 
             alert(
                 "Incorrect PIN."
             );
 
             return;
+
         }
 
 
 
-        // ----------------------------------------------
-        // SAVE LOGIN SESSION
-        // ----------------------------------------------
-
-        const loginEmployeeData = {
-
-            id:
-                employee.id,
-
-            employeeId:
-                employee.employeeId,
-
-            name:
-                employee.name,
-
-            department:
-                employee.department,
-
-            designation:
-                employee.designation
-
-        };
-
-
         localStorage.setItem(
             "loggedInEmployee",
-            JSON.stringify(
-                loginEmployeeData
-            )
+            JSON.stringify(employee)
         );
 
 
-
-        // ----------------------------------------------
-        // GO TO DASHBOARD
-        // ----------------------------------------------
 
         window.location.href =
             "dashboard.html";
@@ -400,9 +303,10 @@ async function loginEmployee(event) {
 }
 
 
-// ======================================================
-// GET LOGGED-IN EMPLOYEE
-// ======================================================
+
+// ============================================
+// GET CURRENT EMPLOYEE
+// ============================================
 
 function getLoggedInEmployee() {
 
@@ -415,6 +319,7 @@ function getLoggedInEmployee() {
     if (!data) {
 
         return null;
+
     }
 
 
@@ -423,12 +328,7 @@ function getLoggedInEmployee() {
         return JSON.parse(data);
 
     }
-    catch (error) {
-
-        console.error(
-            "Session error:",
-            error
-        );
+    catch {
 
         return null;
 
@@ -437,9 +337,28 @@ function getLoggedInEmployee() {
 }
 
 
-// ======================================================
-// REQUIRE LOGIN
-// ======================================================
+
+// ============================================
+// LOGOUT
+// ============================================
+
+function logout() {
+
+    localStorage.removeItem(
+        "loggedInEmployee"
+    );
+
+
+    window.location.href =
+        "login.html";
+
+}
+
+
+
+// ============================================
+// PAGE PROTECTION
+// ============================================
 
 function requireLogin() {
 
@@ -453,26 +372,10 @@ function requireLogin() {
             "login.html";
 
         return null;
+
     }
 
 
     return employee;
-
-}
-
-
-// ======================================================
-// LOGOUT
-// ======================================================
-
-function logout() {
-
-    localStorage.removeItem(
-        "loggedInEmployee"
-    );
-
-
-    window.location.href =
-        "login.html";
 
 }
