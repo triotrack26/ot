@@ -1,386 +1,528 @@
-const DB_NAME = "OfficeOTDatabase";
+// ======================================================
+// OFFICE OT REGISTER
+// INDEXEDDB DATABASE
+// ======================================================
+
+const DB_NAME = "OfficeOTRegisterDB";
 const DB_VERSION = 1;
 
-const dbReady = new Promise((resolve, reject) => {
+const EMPLOYEE_STORE = "employees";
+const OT_STORE = "otRecords";
+const SETTINGS_STORE = "settings";
 
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-    request.onupgradeneeded = function (event) {
+// ======================================================
+// OPEN DATABASE
+// ======================================================
 
-        const db = event.target.result;
+function openDatabase() {
 
-        // EMPLOYEES
-        if (!db.objectStoreNames.contains("employees")) {
+    return new Promise((resolve, reject) => {
 
-            const employeeStore = db.createObjectStore(
-                "employees",
-                {
-                    keyPath: "id",
-                    autoIncrement: true
-                }
+        const request =
+            indexedDB.open(DB_NAME, DB_VERSION);
+
+
+        request.onupgradeneeded = function (event) {
+
+            const db = event.target.result;
+
+
+            // ------------------------------------------
+            // EMPLOYEES
+            // ------------------------------------------
+
+            if (!db.objectStoreNames.contains(
+                EMPLOYEE_STORE
+            )) {
+
+                const employeeStore =
+                    db.createObjectStore(
+                        EMPLOYEE_STORE,
+                        {
+                            keyPath: "id",
+                            autoIncrement: true
+                        }
+                    );
+
+
+                employeeStore.createIndex(
+                    "employeeId",
+                    "employeeId",
+                    {
+                        unique: true
+                    }
+                );
+
+            }
+
+
+            // ------------------------------------------
+            // OT RECORDS
+            // ------------------------------------------
+
+            if (!db.objectStoreNames.contains(
+                OT_STORE
+            )) {
+
+                const otStore =
+                    db.createObjectStore(
+                        OT_STORE,
+                        {
+                            keyPath: "id",
+                            autoIncrement: true
+                        }
+                    );
+
+
+                otStore.createIndex(
+                    "employeeId",
+                    "employeeId",
+                    {
+                        unique: false
+                    }
+                );
+
+
+                otStore.createIndex(
+                    "date",
+                    "date",
+                    {
+                        unique: false
+                    }
+                );
+
+
+                otStore.createIndex(
+                    "month",
+                    "month",
+                    {
+                        unique: false
+                    }
+                );
+
+            }
+
+
+            // ------------------------------------------
+            // SETTINGS
+            // ------------------------------------------
+
+            if (!db.objectStoreNames.contains(
+                SETTINGS_STORE
+            )) {
+
+                db.createObjectStore(
+                    SETTINGS_STORE,
+                    {
+                        keyPath: "id"
+                    }
+                );
+
+            }
+
+        };
+
+
+        request.onsuccess = function () {
+
+            resolve(request.result);
+
+        };
+
+
+        request.onerror = function () {
+
+            console.error(
+                "Database error:",
+                request.error
             );
 
-            employeeStore.createIndex(
-                "employeeId",
-                "employeeId",
-                { unique: true }
-            );
+            reject(request.error);
 
-            employeeStore.createIndex(
-                "name",
-                "name",
-                { unique: false }
-            );
-        }
+        };
 
-        // DAILY OT RECORDS
-        if (!db.objectStoreNames.contains("records")) {
+    });
 
-            const recordStore = db.createObjectStore(
-                "records",
-                {
-                    keyPath: "id",
-                    autoIncrement: true
-                }
-            );
-
-            recordStore.createIndex(
-                "date",
-                "date",
-                { unique: false }
-            );
-
-            recordStore.createIndex(
-                "month",
-                "month",
-                { unique: false }
-            );
-
-            recordStore.createIndex(
-                "employeeId",
-                "employeeId",
-                { unique: false }
-            );
-        }
-
-        // SETTINGS
-        if (!db.objectStoreNames.contains("settings")) {
-
-            db.createObjectStore(
-                "settings",
-                {
-                    keyPath: "key"
-                }
-            );
-        }
-    };
-
-    request.onsuccess = function (event) {
-
-        console.log("IndexedDB connected");
-
-        resolve(event.target.result);
-    };
-
-    request.onerror = function (event) {
-
-        console.error(
-            "IndexedDB Error:",
-            event.target.error
-        );
-
-        reject(event.target.error);
-    };
-});
+}
 
 
-// ========================================
-// EMPLOYEE FUNCTIONS
-// ========================================
+// ======================================================
+// ADD EMPLOYEE
+// ======================================================
 
 async function addEmployee(employee) {
 
-    const db = await dbReady;
+    const db =
+        await openDatabase();
+
 
     return new Promise((resolve, reject) => {
 
-        const transaction = db.transaction(
-            "employees",
-            "readwrite"
-        );
-
-        const store = transaction.objectStore(
-            "employees"
-        );
-
-        const request = store.add(employee);
-
-        request.onsuccess = () => {
-            resolve(request.result);
-        };
-
-        request.onerror = () => {
-            reject(request.error);
-        };
-    });
-}
-
-
-async function getEmployees() {
-
-    const db = await dbReady;
-
-    return new Promise((resolve, reject) => {
-
-        const transaction = db.transaction(
-            "employees",
-            "readonly"
-        );
-
-        const store = transaction.objectStore(
-            "employees"
-        );
-
-        const request = store.getAll();
-
-        request.onsuccess = () => {
-            resolve(request.result);
-        };
-
-        request.onerror = () => {
-            reject(request.error);
-        };
-    });
-}
-
-
-async function getEmployeeByEmployeeId(employeeId) {
-
-    const db = await dbReady;
-
-    return new Promise((resolve, reject) => {
-
-        const transaction = db.transaction(
-            "employees",
-            "readonly"
-        );
-
-        const store = transaction.objectStore(
-            "employees"
-        );
-
-        const index = store.index(
-            "employeeId"
-        );
-
-        const request = index.get(employeeId);
-
-        request.onsuccess = () => {
-
-            resolve(
-                request.result || null
+        const transaction =
+            db.transaction(
+                EMPLOYEE_STORE,
+                "readwrite"
             );
-        };
 
-        request.onerror = () => {
-            reject(request.error);
-        };
+
+        const store =
+            transaction.objectStore(
+                EMPLOYEE_STORE
+            );
+
+
+        const request =
+            store.add(employee);
+
+
+        request.onsuccess =
+            () => resolve(request.result);
+
+
+        request.onerror =
+            () => reject(request.error);
+
     });
+
 }
 
 
-// ========================================
-// RECORD FUNCTIONS
-// ========================================
+// ======================================================
+// GET EMPLOYEE BY EMPLOYEE ID
+// ======================================================
+
+async function getEmployeeByEmployeeId(
+    employeeId
+) {
+
+    const db =
+        await openDatabase();
+
+
+    return new Promise((resolve, reject) => {
+
+        const transaction =
+            db.transaction(
+                EMPLOYEE_STORE,
+                "readonly"
+            );
+
+
+        const store =
+            transaction.objectStore(
+                EMPLOYEE_STORE
+            );
+
+
+        const index =
+            store.index(
+                "employeeId"
+            );
+
+
+        const request =
+            index.get(employeeId);
+
+
+        request.onsuccess =
+            () => resolve(request.result || null);
+
+
+        request.onerror =
+            () => reject(request.error);
+
+    });
+
+}
+
+
+// ======================================================
+// GET ALL EMPLOYEES
+// ======================================================
+
+async function getAllEmployees() {
+
+    const db =
+        await openDatabase();
+
+
+    return new Promise((resolve, reject) => {
+
+        const transaction =
+            db.transaction(
+                EMPLOYEE_STORE,
+                "readonly"
+            );
+
+
+        const store =
+            transaction.objectStore(
+                EMPLOYEE_STORE
+            );
+
+
+        const request =
+            store.getAll();
+
+
+        request.onsuccess =
+            () => resolve(request.result);
+
+
+        request.onerror =
+            () => reject(request.error);
+
+    });
+
+}
+
+
+// ======================================================
+// ADD OT RECORD
+// ======================================================
 
 async function addRecord(record) {
 
-    const db = await dbReady;
+    const db =
+        await openDatabase();
+
 
     return new Promise((resolve, reject) => {
 
-        const transaction = db.transaction(
-            "records",
-            "readwrite"
-        );
+        const transaction =
+            db.transaction(
+                OT_STORE,
+                "readwrite"
+            );
 
-        const store = transaction.objectStore(
-            "records"
-        );
 
-        const request = store.add(record);
+        const store =
+            transaction.objectStore(
+                OT_STORE
+            );
 
-        request.onsuccess = () => {
-            resolve(request.result);
-        };
 
-        request.onerror = () => {
-            reject(request.error);
-        };
+        const request =
+            store.add(record);
+
+
+        request.onsuccess =
+            () => resolve(request.result);
+
+
+        request.onerror =
+            () => reject(request.error);
+
     });
+
 }
 
+
+// ======================================================
+// GET ALL OT RECORDS
+// ======================================================
 
 async function getAllRecords() {
 
-    const db = await dbReady;
+    const db =
+        await openDatabase();
+
 
     return new Promise((resolve, reject) => {
 
-        const transaction = db.transaction(
-            "records",
-            "readonly"
-        );
+        const transaction =
+            db.transaction(
+                OT_STORE,
+                "readonly"
+            );
 
-        const store = transaction.objectStore(
-            "records"
-        );
 
-        const request = store.getAll();
+        const store =
+            transaction.objectStore(
+                OT_STORE
+            );
 
-        request.onsuccess = () => {
-            resolve(request.result);
-        };
 
-        request.onerror = () => {
-            reject(request.error);
-        };
+        const request =
+            store.getAll();
+
+
+        request.onsuccess =
+            () => resolve(request.result);
+
+
+        request.onerror =
+            () => reject(request.error);
+
     });
+
 }
 
 
-async function getEmployeeRecords(employeeId) {
+// ======================================================
+// GET OT RECORD BY ID
+// ======================================================
 
-    const records = await getAllRecords();
+async function getRecordById(id) {
 
-    return records.filter(
-        record =>
-            Number(record.employeeId) ===
-            Number(employeeId)
-    );
+    const db =
+        await openDatabase();
+
+
+    return new Promise((resolve, reject) => {
+
+        const transaction =
+            db.transaction(
+                OT_STORE,
+                "readonly"
+            );
+
+
+        const store =
+            transaction.objectStore(
+                OT_STORE
+            );
+
+
+        const request =
+            store.get(id);
+
+
+        request.onsuccess =
+            () => resolve(
+                request.result || null
+            );
+
+
+        request.onerror =
+            () => reject(request.error);
+
+    });
+
 }
 
 
-async function getRecordsByDate(date) {
-
-    const records = await getAllRecords();
-
-    return records.filter(
-        record =>
-            record.date === date
-    );
-}
-
-
-async function getRecordsByMonth(month) {
-
-    const records = await getAllRecords();
-
-    return records.filter(
-        record =>
-            record.month === month
-    );
-}
-
+// ======================================================
+// DELETE OT RECORD
+// ======================================================
 
 async function deleteRecord(id) {
 
-    const db = await dbReady;
+    const db =
+        await openDatabase();
+
 
     return new Promise((resolve, reject) => {
 
-        const transaction = db.transaction(
-            "records",
-            "readwrite"
-        );
+        const transaction =
+            db.transaction(
+                OT_STORE,
+                "readwrite"
+            );
 
-        const store = transaction.objectStore(
-            "records"
-        );
 
-        const request = store.delete(
-            Number(id)
-        );
+        const store =
+            transaction.objectStore(
+                OT_STORE
+            );
 
-        request.onsuccess = () => {
-            resolve();
-        };
 
-        request.onerror = () => {
-            reject(request.error);
-        };
+        const request =
+            store.delete(id);
+
+
+        request.onsuccess =
+            () => resolve(true);
+
+
+        request.onerror =
+            () => reject(request.error);
+
     });
+
 }
 
 
-// ========================================
-// SETTINGS
-// ========================================
+// ======================================================
+// SAVE ADMIN SETTINGS
+// ======================================================
 
-async function saveSetting(key, value) {
+async function saveSettings(settings) {
 
-    const db = await dbReady;
+    const db =
+        await openDatabase();
+
 
     return new Promise((resolve, reject) => {
 
-        const transaction = db.transaction(
-            "settings",
-            "readwrite"
-        );
+        const transaction =
+            db.transaction(
+                SETTINGS_STORE,
+                "readwrite"
+            );
 
-        const store = transaction.objectStore(
-            "settings"
-        );
 
-        const request = store.put({
-            key: key,
-            value: value
-        });
+        const store =
+            transaction.objectStore(
+                SETTINGS_STORE
+            );
 
-        request.onsuccess = () => {
-            resolve();
-        };
 
-        request.onerror = () => {
-            reject(request.error);
-        };
+        const request =
+            store.put(settings);
+
+
+        request.onsuccess =
+            () => resolve(true);
+
+
+        request.onerror =
+            () => reject(request.error);
+
     });
+
 }
 
 
-async function getSetting(key) {
+// ======================================================
+// GET ADMIN SETTINGS
+// ======================================================
 
-    const db = await dbReady;
+async function getSettings() {
+
+    const db =
+        await openDatabase();
+
 
     return new Promise((resolve, reject) => {
 
-        const transaction = db.transaction(
-            "settings",
-            "readonly"
-        );
+        const transaction =
+            db.transaction(
+                SETTINGS_STORE,
+                "readonly"
+            );
 
-        const store = transaction.objectStore(
-            "settings"
-        );
 
-        const request = store.get(key);
+        const store =
+            transaction.objectStore(
+                SETTINGS_STORE
+            );
 
-        request.onsuccess = () => {
 
-            if (request.result) {
+        const request =
+            store.get("officeSettings");
 
-                resolve(
-                    request.result.value
-                );
 
-            } else {
+        request.onsuccess =
+            () => resolve(
+                request.result || null
+            );
 
-                resolve(null);
-            }
-        };
 
-        request.onerror = () => {
-            reject(request.error);
-        };
+        request.onerror =
+            () => reject(request.error);
+
     });
+
 }
