@@ -8,12 +8,13 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>Admin Settings</title>
+    <title>Admin Module - Office OT Register</title>
 
     <link rel="stylesheet"
           href="css/style.css">
 
 </head>
+
 
 <body>
 
@@ -22,16 +23,19 @@
 
     <div>
 
-        <h2>Admin Module</h2>
+        <h2>
+            Office OT Register
+        </h2>
 
         <span>
-            Office Rules & Settings
+            Admin Module
         </span>
 
     </div>
 
 
     <button
+        type="button"
         onclick="logout()"
         class="logout-btn">
 
@@ -42,33 +46,41 @@
 </header>
 
 
+
 <main class="container">
 
 
-    <a href="dashboard.html"
-       class="back-link">
+    <a
+        href="dashboard.html"
+        class="back-link">
 
         ← Dashboard
 
     </a>
 
 
+
     <div class="form-box wide">
 
 
-        <h1>Office Working Rules</h1>
+        <h1>
+            Office Settings
+        </h1>
 
 
         <p class="subtitle">
 
-            These settings are stored
-            locally on this device.
+            Set the normal working hours
+            and working days for the office.
 
         </p>
 
 
+
         <form id="settingsForm">
 
+
+            <!-- START TIME -->
 
             <label for="startTime">
 
@@ -76,11 +88,16 @@
 
             </label>
 
+
             <input
                 type="time"
                 id="startTime"
+                required
             >
 
+
+
+            <!-- END TIME -->
 
             <label for="endTime">
 
@@ -88,11 +105,16 @@
 
             </label>
 
+
             <input
                 type="time"
                 id="endTime"
+                required
             >
 
+
+
+            <!-- NORMAL HOURS -->
 
             <label for="normalHours">
 
@@ -100,17 +122,41 @@
 
             </label>
 
+
             <input
                 type="number"
                 id="normalHours"
                 min="0"
                 step="0.5"
                 placeholder="Example: 8"
+                required
             >
 
 
-            <h3>
+
+            <!-- MONTH -->
+
+            <label for="selectedMonth">
+
+                Current Working Month
+
+            </label>
+
+
+            <input
+                type="month"
+                id="selectedMonth"
+                required
+            >
+
+
+
+            <!-- WORKING DAYS -->
+
+            <h3 class="settings-heading">
+
                 Working Days
+
             </h3>
 
 
@@ -130,6 +176,7 @@
                 </label>
 
 
+
                 <label class="check-label">
 
                     <input
@@ -141,6 +188,7 @@
                     Tuesday
 
                 </label>
+
 
 
                 <label class="check-label">
@@ -156,6 +204,7 @@
                 </label>
 
 
+
                 <label class="check-label">
 
                     <input
@@ -167,6 +216,7 @@
                     Thursday
 
                 </label>
+
 
 
                 <label class="check-label">
@@ -182,6 +232,7 @@
                 </label>
 
 
+
                 <label class="check-label">
 
                     <input
@@ -193,6 +244,7 @@
                     Saturday
 
                 </label>
+
 
 
                 <label class="check-label">
@@ -211,6 +263,9 @@
             </div>
 
 
+
+            <!-- SAVE -->
+
             <button
                 type="submit"
                 class="primary-btn">
@@ -226,10 +281,36 @@
     </div>
 
 
+
+    <!-- CURRENT SETTINGS -->
+
+    <div class="summary-box">
+
+
+        <h2>
+            Current Settings
+        </h2>
+
+
+        <div
+            id="currentSettings"
+            class="settings-display">
+
+            No settings saved yet.
+
+        </div>
+
+
+    </div>
+
+
 </main>
 
 
+
 <script src="js/db.js"></script>
+
+<script src="js/auth.js"></script>
 
 <script src="js/admin.js"></script>
 
