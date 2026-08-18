@@ -15,86 +15,148 @@
 
 </head>
 
+
 <body>
 
 
 <div class="form-box">
 
-    <h1>Employee Registration</h1>
+
+    <div class="logo small-logo">
+        OT
+    </div>
+
+
+    <h1>
+        Employee Registration
+    </h1>
+
 
     <p class="subtitle">
-        Register this device for an employee
+        Register your employee details
+        on this device.
     </p>
 
 
     <form id="registerForm">
 
 
+        <!-- EMPLOYEE ID -->
+
         <label for="employeeId">
+
             Employee ID *
+
         </label>
+
 
         <input
             type="text"
             id="employeeId"
             placeholder="Example: EMP001"
+            autocomplete="off"
             required
         >
 
 
+        <!-- EMPLOYEE NAME -->
+
         <label for="employeeName">
+
             Employee Name *
+
         </label>
+
 
         <input
             type="text"
             id="employeeName"
             placeholder="Enter employee name"
+            autocomplete="name"
             required
         >
 
 
+        <!-- DEPARTMENT -->
+
         <label for="department">
+
             Department
+
         </label>
+
 
         <input
             type="text"
             id="department"
             placeholder="Example: IT"
+            autocomplete="organization"
         >
 
 
+        <!-- DESIGNATION -->
+
         <label for="designation">
+
             Designation
+
         </label>
+
 
         <input
             type="text"
             id="designation"
-            placeholder="Example: Technician"
+            placeholder="Example: IT Support"
         >
 
 
+        <!-- PIN -->
+
         <label for="pin">
+
             Create PIN *
+
         </label>
+
 
         <input
             type="password"
             id="pin"
-            placeholder="4-8 digit PIN"
+            placeholder="4 to 8 digit PIN"
             minlength="4"
             maxlength="8"
+            inputmode="numeric"
             required
         >
 
+
+        <!-- CONFIRM PIN -->
+
+        <label for="confirmPin">
+
+            Confirm PIN *
+
+        </label>
+
+
+        <input
+            type="password"
+            id="confirmPin"
+            placeholder="Re-enter PIN"
+            minlength="4"
+            maxlength="8"
+            inputmode="numeric"
+            required
+        >
+
+
+        <!-- REGISTER -->
 
         <button
             type="submit"
             class="primary-btn">
 
-            Register Device
+            Register Employee
 
         </button>
 
@@ -120,10 +182,15 @@
 
     </a>
 
+
 </div>
 
 
+<!-- DATABASE -->
+
 <script src="js/db.js"></script>
+
+<!-- AUTH -->
 
 <script src="js/auth.js"></script>
 
