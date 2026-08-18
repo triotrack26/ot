@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Office OT Register</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<header class="topbar">
+    <div>
+        <h1>Office OT Register</h1>
+        <p>Local Overtime & Extra Duty Management</p>
+    </div>
+</header>
+
+<div class="container">
+
+    <h2>Dashboard</h2>
+
+    <div class="cards">
+
+        <div class="card">
+            <h3>Employees</h3>
+            <p id="employeeCount">0</p>
+        </div>
+
+        <div class="card">
+            <h3>Today's OT</h3>
+            <p id="todayOT">0 hrs</p>
+        </div>
+
+        <div class="card">
+            <h3>Today's Extra Duty</h3>
+            <p id="todayExtra">0 hrs</p>
+        </div>
+
+    </div>
+
+    <div class="menu">
+
+        <a href="register.html" class="menu-btn">
+            Daily OT Register
+        </a>
+
+        <a href="employees.html" class="menu-btn">
+            Employee Register
+        </a>
+
+        <a href="report.html" class="menu-btn">
+            Monthly Report
+        </a>
+
+        <a href="admin.html" class="menu-btn">
+            Admin Settings
+        </a>
+
+    </div>
+
+</div>
+
+<script src="js/db.js"></script>
+
+<script>
+
+async function loadDashboard() {
+
+    const employees = await getEmployees();
+
+    document.getElementById("employeeCount").textContent =
+        employees.length;
+
+    const today = new Date().toISOString().split("T")[0];
+
+    const records = await getRecordsByDate(today);
+
+    let ot = 0;
+    let extra = 0;
+
+    records.forEach(record => {
+
+        ot += Number(record.otHours || 0);
+        extra += Number(record.extraHours || 0);
+
+    });
+
+    document.getElementById("todayOT").textContent =
+        ot.toFixed(2) + " hrs";
+
+    document.getElementById("todayExtra").textContent =
+        extra.toFixed(2) + " hrs";
+}
+
+loadDashboard();
+
+</script>
+
+</body>
+</html>
