@@ -1,58 +1,156 @@
-// ========================================
-// LOAD ADMIN SETTINGS
-// ========================================
+// ============================================
+// ADMIN SETTINGS
+// ============================================
 
-async function loadAdminSettings() {
+document.addEventListener(
+    "DOMContentLoaded",
+    async function () {
 
-    const settings =
-        await getSetting(
-            "officeSettings"
-        );
+        const employee =
+            requireLogin();
 
 
-    if (!settings) {
+        if (!employee) {
+            return;
+        }
 
-        return;
+
+        await loadSettings();
+
+
+        const form =
+            document.getElementById(
+                "settingsForm"
+            );
+
+
+        if (form) {
+
+            form.addEventListener(
+                "submit",
+                saveOfficeSettings
+            );
+
+        }
+
     }
+);
 
 
-    const startTime =
+
+// ============================================
+// LOAD SETTINGS
+// ============================================
+
+async function loadSettings() {
+
+    try {
+
+        const settings =
+            await getSettings();
+
+
+        if (!settings) {
+
+            setDefaultSettings();
+
+            return;
+
+        }
+
+
         document.getElementById(
             "startTime"
-        );
+        ).value =
+            settings.startTime || "09:00";
 
 
-    const endTime =
         document.getElementById(
             "endTime"
-        );
+        ).value =
+            settings.endTime || "17:00";
 
 
-    const normalHours =
         document.getElementById(
             "normalHours"
+        ).value =
+            settings.normalHours || 8;
+
+
+        document.getElementById(
+            "activeMonth"
+        ).value =
+            settings.activeMonth ||
+            new Date()
+                .toISOString()
+                .substring(0, 7);
+
+
+        const days =
+            settings.workingDays || [];
+
+
+        document
+            .querySelectorAll(
+                ".workingDay"
+            )
+            .forEach(
+                checkbox => {
+
+                    checkbox.checked =
+                        days.includes(
+                            checkbox.value
+                        );
+
+                }
+            );
+
+
+        displayCurrentSettings(
+            settings
         );
 
+    }
+    catch (error) {
 
-    if (startTime) {
+        console.error(
+            "Settings load error:",
+            error
+        );
 
-        startTime.value =
-            settings.startTime || "";
     }
 
-
-    if (endTime) {
-
-        endTime.value =
-            settings.endTime || "";
-    }
+}
 
 
-    if (normalHours) {
 
-        normalHours.value =
-            settings.normalHours || "";
-    }
+// ============================================
+// DEFAULT SETTINGS
+// ============================================
+
+function setDefaultSettings() {
+
+    document.getElementById(
+        "startTime"
+    ).value = "09:00";
+
+
+    document.getElementById(
+        "endTime"
+    ).value = "17:00";
+
+
+    document.getElementById(
+        "normalHours"
+    ).value = 8;
+
+
+    document.getElementById(
+        "activeMonth"
+    ).value =
+        new Date()
+            .toISOString()
+            .substring(0, 7);
 
 
     document
@@ -63,112 +161,182 @@ async function loadAdminSettings() {
             checkbox => {
 
                 checkbox.checked =
-                    settings
-                        .workingDays
-                        ?.includes(
-                            checkbox.value
-                        ) || false;
+                    checkbox.value !==
+                    "Sunday";
+
             }
         );
+
 }
 
 
-// ========================================
+
+// ============================================
 // SAVE SETTINGS
-// ========================================
+// ============================================
 
-async function saveAdminSettings() {
+async function saveOfficeSettings(event) {
 
-    const startTime =
-        document.getElementById(
-            "startTime"
-        ).value;
+    event.preventDefault();
 
 
-    const endTime =
-        document.getElementById(
-            "endTime"
-        ).value;
+    try {
 
-
-    const normalHours =
-        Number(
+        const startTime =
             document.getElementById(
-                "normalHours"
-            ).value
+                "startTime"
+            ).value;
+
+
+        const endTime =
+            document.getElementById(
+                "endTime"
+            ).value;
+
+
+        const normalHours =
+            Number(
+                document.getElementById(
+                    "normalHours"
+                ).value
+            );
+
+
+        const activeMonth =
+            document.getElementById(
+                "activeMonth"
+            ).value;
+
+
+        const workingDays =
+            Array.from(
+                document.querySelectorAll(
+                    ".workingDay:checked"
+                )
+            ).map(
+                checkbox =>
+                    checkbox.value
+            );
+
+
+        if (
+            workingDays.length === 0
+        ) {
+
+            alert(
+                "Select at least one working day."
+            );
+
+            return;
+
+        }
+
+
+        const settings = {
+
+            id:
+                "officeSettings",
+
+            startTime:
+                startTime,
+
+            endTime:
+                endTime,
+
+            normalHours:
+                normalHours,
+
+            activeMonth:
+                activeMonth,
+
+            workingDays:
+                workingDays,
+
+            updatedAt:
+                new Date().toISOString()
+
+        };
+
+
+        await saveSettings(
+            settings
         );
 
 
-    const workingDays = [];
-
-
-    document
-        .querySelectorAll(
-            ".workingDay"
-        )
-        .forEach(
-            checkbox => {
-
-                if (
-                    checkbox.checked
-                ) {
-
-                    workingDays.push(
-                        checkbox.value
-                    );
-                }
-            }
+        alert(
+            "Office settings saved successfully."
         );
 
 
-    const settings = {
+        displayCurrentSettings(
+            settings
+        );
 
-        startTime:
-            startTime,
+    }
+    catch (error) {
 
-        endTime:
-            endTime,
-
-        normalHours:
-            normalHours,
-
-        workingDays:
-            workingDays,
-
-        updatedAt:
-            new Date().toISOString()
-    };
+        console.error(
+            "Save settings error:",
+            error
+        );
 
 
-    await saveSetting(
-        "officeSettings",
-        settings
-    );
+        alert(
+            "Unable to save settings."
+        );
 
+    }
 
-    alert(
-        "Admin settings saved."
-    );
 }
 
 
-// ========================================
-// FORM
-// ========================================
 
-document
-    .getElementById(
-        "settingsForm"
-    )
-    ?.addEventListener(
-        "submit",
-        async function(event) {
+// ============================================
+// DISPLAY SETTINGS
+// ============================================
 
-            event.preventDefault();
+function displayCurrentSettings(
+    settings
+) {
 
-            await saveAdminSettings();
-        }
-    );
+    const box =
+        document.getElementById(
+            "currentSettings"
+        );
 
 
-loadAdminSettings();
+    if (!box) {
+        return;
+    }
+
+
+    box.innerHTML = `
+
+        <p>
+            <strong>Working Time:</strong>
+            ${settings.startTime}
+            -
+            ${settings.endTime}
+        </p>
+
+        <p>
+            <strong>Normal Hours:</strong>
+            ${settings.normalHours}
+        </p>
+
+        <p>
+            <strong>Active Month:</strong>
+            ${settings.activeMonth}
+        </p>
+
+        <p>
+            <strong>Working Days:</strong>
+            ${
+                (settings.workingDays || [])
+                    .join(", ")
+            }
+        </p>
+
+    `;
+
+}
