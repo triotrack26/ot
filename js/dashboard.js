@@ -1,245 +1,158 @@
-<!DOCTYPE html>
-<html lang="en">
+// ============================================
+// DASHBOARD
+// ============================================
 
-<head>
+document.addEventListener(
+    "DOMContentLoaded",
+    async function () {
 
-    <meta charset="UTF-8">
+        const employee =
+            requireLogin();
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
 
-    <title>Dashboard - Office OT Register</title>
+        if (!employee) {
+            return;
+        }
 
-    <link rel="stylesheet"
-          href="css/style.css">
 
-</head>
+        const name =
+            document.getElementById(
+                "employeeName"
+            );
 
 
-<body>
+        const info =
+            document.getElementById(
+                "employeeInfo"
+            );
 
 
-<header class="topbar">
+        if (name) {
 
-    <div>
+            name.textContent =
+                employee.name;
 
-        <h2>
-            Office OT Register
-        </h2>
+        }
 
-        <span>
-            Employee Dashboard
-        </span>
 
-    </div>
+        if (info) {
 
+            info.textContent =
+                `${employee.employeeId} • ${
+                    employee.department || "Employee"
+                }`;
 
-    <button
-        type="button"
-        onclick="logout()"
-        class="logout-btn">
+        }
 
-        Logout
 
-    </button>
+        await loadTodaySummary();
 
-</header>
+    }
+);
 
 
 
-<main class="container">
+// ============================================
+// TODAY SUMMARY
+// ============================================
 
+async function loadTodaySummary() {
 
-    <!-- WELCOME -->
+    try {
 
-    <section class="welcome">
+        const employee =
+            getLoggedInEmployee();
 
-        <p>
-            Welcome
-        </p>
 
-        <h1 id="employeeName">
-            Employee
-        </h1>
+        if (!employee) {
+            return;
+        }
 
-        <p id="employeeInfo">
-            Loading employee details...
-        </p>
 
-    </section>
+        const today =
+            new Date()
+                .toISOString()
+                .split("T")[0];
 
 
+        const records =
+            await getAllRecords();
 
-    <!-- TODAY SUMMARY -->
 
-    <section class="cards">
+        const todayRecords =
+            records.filter(
+                record =>
 
+                    String(
+                        record.employeeId
+                    ) === String(
+                        employee.employeeId
+                    )
 
-        <div class="card">
+                    &&
 
-            <div class="card-icon">
-                ⏱️
-            </div>
+                    record.date === today
+            );
 
-            <h3>
-                Today's OT
-            </h3>
 
-            <p>
-                <span id="todayOT">
-                    0
-                </span>
-                hrs
-            </p>
+        let totalOT = 0;
 
-        </div>
+        let totalExtra = 0;
 
 
+        todayRecords.forEach(
+            record => {
 
-        <div class="card">
+                totalOT +=
+                    Number(
+                        record.otHours
+                    ) || 0;
 
-            <div class="card-icon">
-                🛠️
-            </div>
 
-            <h3>
-                Today's Extra Duty
-            </h3>
+                totalExtra +=
+                    Number(
+                        record.extraHours
+                    ) || 0;
 
-            <p>
-                <span id="todayExtra">
-                    0
-                </span>
-                hrs
-            </p>
+            }
+        );
 
-        </div>
 
+        const otElement =
+            document.getElementById(
+                "todayOT"
+            );
 
-    </section>
 
+        const extraElement =
+            document.getElementById(
+                "todayExtra"
+            );
 
 
-    <!-- QUICK ACTIONS -->
+        if (otElement) {
 
-    <div class="section-title">
+            otElement.textContent =
+                totalOT;
 
-        <h2>
-            Quick Actions
-        </h2>
+        }
 
-    </div>
 
+        if (extraElement) {
 
+            extraElement.textContent =
+                totalExtra;
 
-    <section class="menu-grid">
+        }
 
+    }
+    catch (error) {
 
-        <!-- DAILY OT -->
+        console.error(
+            "Dashboard error:",
+            error
+        );
 
-        <a
-            href="daily.html"
-            class="menu-card">
+    }
 
-            <span>
-                ➕
-            </span>
-
-            <h3>
-                Daily OT Entry
-            </h3>
-
-            <p>
-                Add today's OT hours,
-                extra duty and remarks.
-            </p>
-
-        </a>
-
-
-
-        <!-- HISTORY -->
-
-        <a
-            href="history.html"
-            class="menu-card">
-
-            <span>
-                📋
-            </span>
-
-            <h3>
-                OT History
-            </h3>
-
-            <p>
-                View all your previous
-                OT records.
-            </p>
-
-        </a>
-
-
-
-        <!-- REPORT -->
-
-        <a
-            href="report.html"
-            class="menu-card">
-
-            <span>
-                📊
-            </span>
-
-            <h3>
-                Monthly Report
-            </h3>
-
-            <p>
-                View monthly OT report
-                and export to Excel.
-            </p>
-
-        </a>
-
-
-
-        <!-- ADMIN -->
-
-        <a
-            href="admin.html"
-            class="menu-card">
-
-            <span>
-                ⚙️
-            </span>
-
-            <h3>
-                Admin Module
-            </h3>
-
-            <p>
-                Manage office hours,
-                working days and rules.
-            </p>
-
-        </a>
-
-
-    </section>
-
-
-</main>
-
-
-
-<script src="js/db.js"></script>
-
-<script src="js/auth.js"></script>
-
-<script src="js/dashboard.js"></script>
-
-
-</body>
-
-</html>
+}
