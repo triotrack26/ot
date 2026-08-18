@@ -15,49 +15,68 @@
 
 </head>
 
+
 <body>
 
 
 <div class="login-box">
+
 
     <div class="logo">
         OT
     </div>
 
 
-    <h1>Employee Login</h1>
+    <h1>
+        Employee Login
+    </h1>
+
 
     <p class="subtitle">
-        Login to your local OT register
+        Login to your Office OT Register
     </p>
 
 
     <form id="loginForm">
 
 
+        <!-- EMPLOYEE ID -->
+
         <label for="employeeId">
+
             Employee ID
+
         </label>
+
 
         <input
             type="text"
             id="employeeId"
             placeholder="Example: EMP001"
+            autocomplete="username"
             required
         >
 
 
+        <!-- PIN -->
+
         <label for="pin">
+
             PIN
+
         </label>
+
 
         <input
             type="password"
             id="pin"
             placeholder="Enter your PIN"
+            autocomplete="current-password"
             required
         >
 
+
+        <!-- LOGIN -->
 
         <button
             type="submit"
@@ -89,10 +108,15 @@
 
     </a>
 
+
 </div>
 
 
+<!-- DATABASE -->
+
 <script src="js/db.js"></script>
+
+<!-- AUTH -->
 
 <script src="js/auth.js"></script>
 
