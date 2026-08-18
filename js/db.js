@@ -1,562 +1,386 @@
 const DB_NAME = "OfficeOTDatabase";
 const DB_VERSION = 1;
 
-let db = null;
-
-
-// ======================================
-// OPEN DATABASE
-// ======================================
-
 const dbReady = new Promise((resolve, reject) => {
 
-    const request =
-        indexedDB.open(
-            DB_NAME,
-            DB_VERSION
-        );
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
 
+    request.onupgradeneeded = function (event) {
 
-    request.onupgradeneeded = function(event) {
+        const db = event.target.result;
 
-        const database =
-            event.target.result;
-
-
-        // ==================================
         // EMPLOYEES
-        // ==================================
+        if (!db.objectStoreNames.contains("employees")) {
 
-        if (
-            !database.objectStoreNames
-                .contains("employees")
-        ) {
-
-            const employeeStore =
-                database.createObjectStore(
-                    "employees",
-                    {
-                        keyPath: "id",
-                        autoIncrement: true
-                    }
-                );
-
+            const employeeStore = db.createObjectStore(
+                "employees",
+                {
+                    keyPath: "id",
+                    autoIncrement: true
+                }
+            );
 
             employeeStore.createIndex(
                 "employeeId",
                 "employeeId",
-                {
-                    unique: true
-                }
+                { unique: true }
             );
-
 
             employeeStore.createIndex(
                 "name",
                 "name",
-                {
-                    unique: false
-                }
+                { unique: false }
             );
-
         }
 
+        // DAILY OT RECORDS
+        if (!db.objectStoreNames.contains("records")) {
 
-        // ==================================
-        // OT RECORDS
-        // ==================================
-
-        if (
-            !database.objectStoreNames
-                .contains("records")
-        ) {
-
-            const recordStore =
-                database.createObjectStore(
-                    "records",
-                    {
-                        keyPath: "id",
-                        autoIncrement: true
-                    }
-                );
-
+            const recordStore = db.createObjectStore(
+                "records",
+                {
+                    keyPath: "id",
+                    autoIncrement: true
+                }
+            );
 
             recordStore.createIndex(
                 "date",
                 "date",
-                {
-                    unique: false
-                }
+                { unique: false }
             );
-
 
             recordStore.createIndex(
                 "month",
                 "month",
-                {
-                    unique: false
-                }
+                { unique: false }
             );
-
 
             recordStore.createIndex(
                 "employeeId",
                 "employeeId",
-                {
-                    unique: false
-                }
+                { unique: false }
             );
-
         }
 
-
-        // ==================================
         // SETTINGS
-        // ==================================
+        if (!db.objectStoreNames.contains("settings")) {
 
-        if (
-            !database.objectStoreNames
-                .contains("settings")
-        ) {
-
-            database.createObjectStore(
+            db.createObjectStore(
                 "settings",
                 {
                     keyPath: "key"
                 }
             );
-
         }
-
     };
 
+    request.onsuccess = function (event) {
 
-    request.onsuccess = function(event) {
+        console.log("IndexedDB connected");
 
-        db =
-            event.target.result;
-
-        console.log(
-            "IndexedDB connected"
-        );
-
-        resolve(db);
-
+        resolve(event.target.result);
     };
 
-
-    request.onerror = function(event) {
+    request.onerror = function (event) {
 
         console.error(
-            "Database error:",
+            "IndexedDB Error:",
             event.target.error
         );
 
-        reject(
-            event.target.error
-        );
-
+        reject(event.target.error);
     };
-
 });
 
 
-// ======================================
-// EMPLOYEE
-// ======================================
+// ========================================
+// EMPLOYEE FUNCTIONS
+// ========================================
 
 async function addEmployee(employee) {
 
-    const database =
-        await dbReady;
+    const db = await dbReady;
 
+    return new Promise((resolve, reject) => {
 
-    return new Promise(
-        (resolve, reject) => {
+        const transaction = db.transaction(
+            "employees",
+            "readwrite"
+        );
 
-            const transaction =
-                database.transaction(
-                    "employees",
-                    "readwrite"
-                );
+        const store = transaction.objectStore(
+            "employees"
+        );
 
+        const request = store.add(employee);
 
-            const store =
-                transaction.objectStore(
-                    "employees"
-                );
+        request.onsuccess = () => {
+            resolve(request.result);
+        };
 
-
-            const request =
-                store.add(employee);
-
-
-            request.onsuccess =
-                () => resolve(
-                    request.result
-                );
-
-
-            request.onerror =
-                () => reject(
-                    request.error
-                );
-
-        }
-    );
-
+        request.onerror = () => {
+            reject(request.error);
+        };
+    });
 }
 
 
 async function getEmployees() {
 
-    const database =
-        await dbReady;
+    const db = await dbReady;
 
+    return new Promise((resolve, reject) => {
 
-    return new Promise(
-        (resolve, reject) => {
+        const transaction = db.transaction(
+            "employees",
+            "readonly"
+        );
 
-            const transaction =
-                database.transaction(
-                    "employees",
-                    "readonly"
-                );
+        const store = transaction.objectStore(
+            "employees"
+        );
 
+        const request = store.getAll();
 
-            const store =
-                transaction.objectStore(
-                    "employees"
-                );
+        request.onsuccess = () => {
+            resolve(request.result);
+        };
 
-
-            const request =
-                store.getAll();
-
-
-            request.onsuccess =
-                () => resolve(
-                    request.result
-                );
-
-
-            request.onerror =
-                () => reject(
-                    request.error
-                );
-
-        }
-    );
-
+        request.onerror = () => {
+            reject(request.error);
+        };
+    });
 }
 
 
-async function getEmployeeByEmployeeId(
-    employeeId
-) {
+async function getEmployeeByEmployeeId(employeeId) {
 
-    const database =
-        await dbReady;
+    const db = await dbReady;
 
+    return new Promise((resolve, reject) => {
 
-    return new Promise(
-        (resolve, reject) => {
+        const transaction = db.transaction(
+            "employees",
+            "readonly"
+        );
 
-            const transaction =
-                database.transaction(
-                    "employees",
-                    "readonly"
-                );
+        const store = transaction.objectStore(
+            "employees"
+        );
 
+        const index = store.index(
+            "employeeId"
+        );
 
-            const store =
-                transaction.objectStore(
-                    "employees"
-                );
+        const request = index.get(employeeId);
 
+        request.onsuccess = () => {
 
-            const index =
-                store.index(
-                    "employeeId"
-                );
+            resolve(
+                request.result || null
+            );
+        };
 
-
-            const request =
-                index.get(
-                    employeeId
-                );
-
-
-            request.onsuccess =
-                () => resolve(
-                    request.result || null
-                );
-
-
-            request.onerror =
-                () => reject(
-                    request.error
-                );
-
-        }
-    );
-
+        request.onerror = () => {
+            reject(request.error);
+        };
+    });
 }
 
 
-// ======================================
-// OT RECORD
-// ======================================
+// ========================================
+// RECORD FUNCTIONS
+// ========================================
 
 async function addRecord(record) {
 
-    const database =
-        await dbReady;
+    const db = await dbReady;
 
+    return new Promise((resolve, reject) => {
 
-    return new Promise(
-        (resolve, reject) => {
+        const transaction = db.transaction(
+            "records",
+            "readwrite"
+        );
 
-            const transaction =
-                database.transaction(
-                    "records",
-                    "readwrite"
-                );
+        const store = transaction.objectStore(
+            "records"
+        );
 
+        const request = store.add(record);
 
-            const store =
-                transaction.objectStore(
-                    "records"
-                );
+        request.onsuccess = () => {
+            resolve(request.result);
+        };
 
-
-            const request =
-                store.add(record);
-
-
-            request.onsuccess =
-                () => resolve(
-                    request.result
-                );
-
-
-            request.onerror =
-                () => reject(
-                    request.error
-                );
-
-        }
-    );
-
+        request.onerror = () => {
+            reject(request.error);
+        };
+    });
 }
 
 
 async function getAllRecords() {
 
-    const database =
-        await dbReady;
+    const db = await dbReady;
 
+    return new Promise((resolve, reject) => {
 
-    return new Promise(
-        (resolve, reject) => {
+        const transaction = db.transaction(
+            "records",
+            "readonly"
+        );
 
-            const transaction =
-                database.transaction(
-                    "records",
-                    "readonly"
-                );
+        const store = transaction.objectStore(
+            "records"
+        );
 
+        const request = store.getAll();
 
-            const store =
-                transaction.objectStore(
-                    "records"
-                );
+        request.onsuccess = () => {
+            resolve(request.result);
+        };
 
-
-            const request =
-                store.getAll();
-
-
-            request.onsuccess =
-                () => resolve(
-                    request.result
-                );
-
-
-            request.onerror =
-                () => reject(
-                    request.error
-                );
-
-        }
-    );
-
+        request.onerror = () => {
+            reject(request.error);
+        };
+    });
 }
 
 
-async function getEmployeeRecords(
-    employeeId
-) {
+async function getEmployeeRecords(employeeId) {
 
-    const records =
-        await getAllRecords();
-
+    const records = await getAllRecords();
 
     return records.filter(
         record =>
             Number(record.employeeId) ===
             Number(employeeId)
     );
+}
 
+
+async function getRecordsByDate(date) {
+
+    const records = await getAllRecords();
+
+    return records.filter(
+        record =>
+            record.date === date
+    );
+}
+
+
+async function getRecordsByMonth(month) {
+
+    const records = await getAllRecords();
+
+    return records.filter(
+        record =>
+            record.month === month
+    );
 }
 
 
 async function deleteRecord(id) {
 
-    const database =
-        await dbReady;
+    const db = await dbReady;
 
+    return new Promise((resolve, reject) => {
 
-    return new Promise(
-        (resolve, reject) => {
+        const transaction = db.transaction(
+            "records",
+            "readwrite"
+        );
 
-            const transaction =
-                database.transaction(
-                    "records",
-                    "readwrite"
-                );
+        const store = transaction.objectStore(
+            "records"
+        );
 
+        const request = store.delete(
+            Number(id)
+        );
 
-            const store =
-                transaction.objectStore(
-                    "records"
-                );
+        request.onsuccess = () => {
+            resolve();
+        };
 
-
-            const request =
-                store.delete(
-                    Number(id)
-                );
-
-
-            request.onsuccess =
-                () => resolve();
-
-
-            request.onerror =
-                () => reject(
-                    request.error
-                );
-
-        }
-    );
-
+        request.onerror = () => {
+            reject(request.error);
+        };
+    });
 }
 
 
-// ======================================
+// ========================================
 // SETTINGS
-// ======================================
+// ========================================
 
-async function saveSetting(
-    key,
-    value
-) {
+async function saveSetting(key, value) {
 
-    const database =
-        await dbReady;
+    const db = await dbReady;
 
+    return new Promise((resolve, reject) => {
 
-    return new Promise(
-        (resolve, reject) => {
+        const transaction = db.transaction(
+            "settings",
+            "readwrite"
+        );
 
-            const transaction =
-                database.transaction(
-                    "settings",
-                    "readwrite"
-                );
+        const store = transaction.objectStore(
+            "settings"
+        );
 
+        const request = store.put({
+            key: key,
+            value: value
+        });
 
-            const store =
-                transaction.objectStore(
-                    "settings"
-                );
+        request.onsuccess = () => {
+            resolve();
+        };
 
-
-            const request =
-                store.put({
-                    key: key,
-                    value: value
-                });
-
-
-            request.onsuccess =
-                () => resolve();
-
-
-            request.onerror =
-                () => reject(
-                    request.error
-                );
-
-        }
-    );
-
+        request.onerror = () => {
+            reject(request.error);
+        };
+    });
 }
 
 
 async function getSetting(key) {
 
-    const database =
-        await dbReady;
+    const db = await dbReady;
 
+    return new Promise((resolve, reject) => {
 
-    return new Promise(
-        (resolve, reject) => {
+        const transaction = db.transaction(
+            "settings",
+            "readonly"
+        );
 
-            const transaction =
-                database.transaction(
-                    "settings",
-                    "readonly"
+        const store = transaction.objectStore(
+            "settings"
+        );
+
+        const request = store.get(key);
+
+        request.onsuccess = () => {
+
+            if (request.result) {
+
+                resolve(
+                    request.result.value
                 );
 
+            } else {
 
-            const store =
-                transaction.objectStore(
-                    "settings"
-                );
+                resolve(null);
+            }
+        };
 
-
-            const request =
-                store.get(key);
-
-
-            request.onsuccess =
-                () => {
-
-                    if (
-                        request.result
-                    ) {
-
-                        resolve(
-                            request.result.value
-                        );
-
-                    } else {
-
-                        resolve(null);
-
-                    }
-
-                };
-
-
-            request.onerror =
-                () => reject(
-                    request.error
-                );
-
-        }
-    );
-
+        request.onerror = () => {
+            reject(request.error);
+        };
+    });
 }
