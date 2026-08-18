@@ -1,173 +1,295 @@
-let historyEmployee = null;
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
 
-// ========================================
-// LOAD HISTORY
-// ========================================
+    <meta charset="UTF-8">
 
-async function loadHistory() {
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
-    historyEmployee =
-        await checkLogin();
+    <title>OT History</title>
 
+    <link rel="stylesheet"
+          href="css/style.css">
 
-    if (!historyEmployee) {
+</head>
 
-        return;
-    }
 
+<body>
 
-    const records =
-        await getEmployeeRecords(
-            historyEmployee.id
-        );
 
+<header class="topbar">
 
-    records.sort(
-        (a, b) =>
-            b.date.localeCompare(
-                a.date
-            )
-    );
+    <div>
 
+        <h2>
+            OT History
+        </h2>
 
-    const table =
-        document.getElementById(
-            "historyTable"
-        );
+        <span id="employeeName">
+            Employee
+        </span>
 
+    </div>
 
-    if (!table) {
 
-        return;
-    }
+    <button
+        type="button"
+        onclick="logout()"
+        class="logout-btn">
 
+        Logout
 
-    table.innerHTML = "";
+    </button>
 
+</header>
 
-    let totalOT = 0;
 
-    let totalExtra = 0;
 
+<main class="container">
 
-    records.forEach(record => {
 
-        totalOT +=
-            Number(
-                record.otHours || 0
-            );
+    <a
+        href="dashboard.html"
+        class="back-link">
 
+        ← Dashboard
 
-        totalExtra +=
-            Number(
-                record.extraHours || 0
-            );
+    </a>
 
 
-        const row =
-            document.createElement(
-                "tr"
-            );
 
+    <!-- EMPLOYEE -->
 
-        row.innerHTML = `
+    <div class="welcome">
 
-            <td>
-                ${record.date}
-            </td>
+        <p>
+            Employee
+        </p>
 
-            <td>
-                ${record.otHours || 0}
-            </td>
+        <h1 id="employeeNameHistory">
+            Loading...
+        </h1>
 
-            <td>
-                ${record.extraDuty || "-"}
-            </td>
+    </div>
 
-            <td>
-                ${record.extraHours || 0}
-            </td>
 
-            <td>
-                ${record.remarks || "-"}
-            </td>
 
-            <td>
+    <!-- SUMMARY -->
 
-                <button
-                    onclick="
-                    deleteHistoryRecord(
-                        ${record.id}
-                    )
-                    ">
+    <div class="summary-box">
 
-                    Delete
 
-                </button>
+        <h2>
+            My OT Summary
+        </h2>
 
-            </td>
 
-        `;
 
+        <div class="summary-items">
 
-        table.appendChild(
-            row
-        );
 
-    });
+            <div>
 
+                <span>
+                    Total OT
+                </span>
 
-    const totalOTElement =
-        document.getElementById(
-            "historyTotalOT"
-        );
+                <strong>
 
+                    <span id="historyTotalOT">
+                        0
+                    </span>
 
-    const totalExtraElement =
-        document.getElementById(
-            "historyTotalExtra"
-        );
+                    hrs
 
+                </strong>
 
-    if (totalOTElement) {
+            </div>
 
-        totalOTElement.textContent =
-            totalOT.toFixed(2);
-    }
 
 
-    if (totalExtraElement) {
+            <div>
 
-        totalExtraElement.textContent =
-            totalExtra.toFixed(2);
-    }
-}
+                <span>
+                    Total Extra Duty
+                </span>
 
+                <strong>
 
-// ========================================
-// DELETE
-// ========================================
+                    <span id="historyTotalExtra">
+                        0
+                    </span>
 
-async function deleteHistoryRecord(id) {
+                    hrs
 
-    if (
-        !confirm(
-            "Delete this record permanently?"
-        )
-    ) {
+                </strong>
 
-        return;
-    }
+            </div>
 
 
-    await deleteRecord(
-        id
-    );
 
+            <div>
 
-    await loadHistory();
-}
+                <span>
+                    Total Records
+                </span>
 
+                <strong>
 
-loadHistory();
+                    <span id="historyTotalRecords">
+                        0
+                    </span>
+
+                </strong>
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- FILTER -->
+
+    <div class="report-controls">
+
+
+        <div>
+
+            <label for="historyMonth">
+
+                Select Month
+
+            </label>
+
+
+            <input
+                type="month"
+                id="historyMonth"
+            >
+
+        </div>
+
+
+
+        <button
+            type="button"
+            onclick="loadHistory()"
+            class="secondary-btn">
+
+            🔍 View
+
+        </button>
+
+
+
+        <button
+            type="button"
+            onclick="clearHistoryFilter()"
+            class="secondary-btn">
+
+            Show All
+
+        </button>
+
+
+    </div>
+
+
+
+    <!-- HISTORY TABLE -->
+
+    <div class="table-box">
+
+
+        <h2>
+            OT Records
+        </h2>
+
+
+
+        <div class="table-scroll">
+
+
+            <table>
+
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Date
+                        </th>
+
+                        <th>
+                            OT Hours
+                        </th>
+
+                        <th>
+                            Extra Duty
+                        </th>
+
+                        <th>
+                            Extra Hours
+                        </th>
+
+                        <th>
+                            Remarks
+                        </th>
+
+                        <th>
+                            Action
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+
+                <tbody id="historyTable">
+
+                    <tr>
+
+                        <td
+                            colspan="6"
+                            style="text-align:center;">
+
+                            Loading records...
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+
+            </table>
+
+
+        </div>
+
+
+    </div>
+
+
+</main>
+
+
+
+<script src="js/db.js"></script>
+
+<script src="js/auth.js"></script>
+
+<script src="js/history.js"></script>
+
+
+</body>
+
+</html>
