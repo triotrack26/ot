@@ -1,73 +1,186 @@
-// ========================================
-// REGISTER
-// ========================================
-
-const registerForm =
-    document.getElementById("registerForm");
+// ======================================================
+// OFFICE OT REGISTER
+// EMPLOYEE AUTHENTICATION
+// ======================================================
 
 
-if (registerForm) {
+// ======================================================
+// PAGE LOAD
+// ======================================================
 
-    registerForm.addEventListener(
-        "submit",
-        registerEmployee
-    );
-}
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
 
+
+        // ----------------------------------------------
+        // REGISTER PAGE
+        // ----------------------------------------------
+
+        const registerForm =
+            document.getElementById(
+                "registerForm"
+            );
+
+
+        if (registerForm) {
+
+            registerForm.addEventListener(
+                "submit",
+                registerEmployee
+            );
+
+        }
+
+
+        // ----------------------------------------------
+        // LOGIN PAGE
+        // ----------------------------------------------
+
+        const loginForm =
+            document.getElementById(
+                "loginForm"
+            );
+
+
+        if (loginForm) {
+
+            loginForm.addEventListener(
+                "submit",
+                loginEmployee
+            );
+
+        }
+
+    }
+);
+
+
+// ======================================================
+// REGISTER EMPLOYEE
+// ======================================================
 
 async function registerEmployee(event) {
 
     event.preventDefault();
 
-    const employeeId =
-        document.getElementById(
-            "employeeId"
-        ).value.trim();
-
-    const name =
-        document.getElementById(
-            "employeeName"
-        ).value.trim();
-
-    const department =
-        document.getElementById(
-            "department"
-        ).value.trim();
-
-    const designation =
-        document.getElementById(
-            "designation"
-        ).value.trim();
-
-    const pin =
-        document.getElementById(
-            "pin"
-        ).value;
-
-
-    if (
-        !employeeId ||
-        !name ||
-        !pin
-    ) {
-
-        alert(
-            "Please fill all required fields."
-        );
-
-        return;
-    }
-
 
     try {
 
-        const existing =
+        // ----------------------------------------------
+        // GET FORM VALUES
+        // ----------------------------------------------
+
+        const employeeId =
+            document
+                .getElementById("employeeId")
+                .value
+                .trim()
+                .toUpperCase();
+
+
+        const name =
+            document
+                .getElementById("employeeName")
+                .value
+                .trim();
+
+
+        const department =
+            document
+                .getElementById("department")
+                .value
+                .trim();
+
+
+        const designation =
+            document
+                .getElementById("designation")
+                .value
+                .trim();
+
+
+        const pin =
+            document
+                .getElementById("pin")
+                .value
+                .trim();
+
+
+        const confirmPin =
+            document
+                .getElementById("confirmPin")
+                .value
+                .trim();
+
+
+
+        // ----------------------------------------------
+        // VALIDATION
+        // ----------------------------------------------
+
+        if (!employeeId) {
+
+            alert(
+                "Please enter Employee ID."
+            );
+
+            return;
+        }
+
+
+        if (!name) {
+
+            alert(
+                "Please enter employee name."
+            );
+
+            return;
+        }
+
+
+        if (!pin) {
+
+            alert(
+                "Please create a PIN."
+            );
+
+            return;
+        }
+
+
+        if (pin.length < 4) {
+
+            alert(
+                "PIN must contain at least 4 digits."
+            );
+
+            return;
+        }
+
+
+        if (pin !== confirmPin) {
+
+            alert(
+                "PIN and Confirm PIN do not match."
+            );
+
+            return;
+        }
+
+
+
+        // ----------------------------------------------
+        // CHECK EXISTING EMPLOYEE
+        // ----------------------------------------------
+
+        const existingEmployee =
             await getEmployeeByEmployeeId(
                 employeeId
             );
 
 
-        if (existing) {
+        if (existingEmployee) {
 
             alert(
                 "This Employee ID is already registered on this device."
@@ -76,6 +189,11 @@ async function registerEmployee(event) {
             return;
         }
 
+
+
+        // ----------------------------------------------
+        // CREATE EMPLOYEE
+        // ----------------------------------------------
 
         const employee = {
 
@@ -96,75 +214,98 @@ async function registerEmployee(event) {
 
             createdAt:
                 new Date().toISOString()
+
         };
 
 
-        const id =
-            await addEmployee(
-                employee
-            );
 
+        // ----------------------------------------------
+        // SAVE TO INDEXEDDB
+        // ----------------------------------------------
 
-        localStorage.setItem(
-            "loggedInEmployeeId",
-            id
+        await addEmployee(
+            employee
         );
 
+
+
+        // ----------------------------------------------
+        // SUCCESS
+        // ----------------------------------------------
 
         alert(
-            "Registration successful."
+            "Employee registered successfully."
         );
 
+
+        // Go to login
 
         window.location.href =
-            "dashboard.html";
+            "login.html";
 
+    }
+    catch (error) {
 
-    } catch (error) {
+        console.error(
+            "Registration error:",
+            error
+        );
 
-        console.error(error);
 
         alert(
-            "Registration failed."
+            "Registration failed. Please try again."
         );
+
     }
+
 }
 
 
-// ========================================
-// LOGIN
-// ========================================
-
-const loginForm =
-    document.getElementById("loginForm");
-
-
-if (loginForm) {
-
-    loginForm.addEventListener(
-        "submit",
-        loginEmployee
-    );
-}
-
+// ======================================================
+// LOGIN EMPLOYEE
+// ======================================================
 
 async function loginEmployee(event) {
 
     event.preventDefault();
 
 
-    const employeeId =
-        document.getElementById(
-            "employeeId"
-        ).value.trim();
-
-    const pin =
-        document.getElementById(
-            "pin"
-        ).value;
-
-
     try {
+
+        const employeeId =
+            document
+                .getElementById("employeeId")
+                .value
+                .trim()
+                .toUpperCase();
+
+
+        const pin =
+            document
+                .getElementById("pin")
+                .value
+                .trim();
+
+
+
+        // ----------------------------------------------
+        // VALIDATION
+        // ----------------------------------------------
+
+        if (!employeeId || !pin) {
+
+            alert(
+                "Please enter Employee ID and PIN."
+            );
+
+            return;
+        }
+
+
+
+        // ----------------------------------------------
+        // FIND EMPLOYEE
+        // ----------------------------------------------
 
         const employee =
             await getEmployeeByEmployeeId(
@@ -175,15 +316,21 @@ async function loginEmployee(event) {
         if (!employee) {
 
             alert(
-                "Employee not found on this device."
+                "Employee ID not found on this device."
             );
 
             return;
         }
 
 
+
+        // ----------------------------------------------
+        // CHECK PIN
+        // ----------------------------------------------
+
         if (
-            employee.pin !== pin
+            String(employee.pin) !==
+            String(pin)
         ) {
 
             alert(
@@ -194,65 +341,110 @@ async function loginEmployee(event) {
         }
 
 
+
+        // ----------------------------------------------
+        // SAVE LOGIN SESSION
+        // ----------------------------------------------
+
+        const loginEmployeeData = {
+
+            id:
+                employee.id,
+
+            employeeId:
+                employee.employeeId,
+
+            name:
+                employee.name,
+
+            department:
+                employee.department,
+
+            designation:
+                employee.designation
+
+        };
+
+
         localStorage.setItem(
-            "loggedInEmployeeId",
-            employee.id
+            "loggedInEmployee",
+            JSON.stringify(
+                loginEmployeeData
+            )
         );
 
+
+
+        // ----------------------------------------------
+        // GO TO DASHBOARD
+        // ----------------------------------------------
 
         window.location.href =
             "dashboard.html";
 
+    }
+    catch (error) {
 
-    } catch (error) {
+        console.error(
+            "Login error:",
+            error
+        );
 
-        console.error(error);
 
         alert(
-            "Login failed."
+            "Login failed. Please try again."
         );
+
     }
+
 }
 
 
-// ========================================
-// GET LOGGED EMPLOYEE
-// ========================================
+// ======================================================
+// GET LOGGED-IN EMPLOYEE
+// ======================================================
 
-async function getLoggedEmployee() {
+function getLoggedInEmployee() {
 
-    const id =
+    const data =
         localStorage.getItem(
-            "loggedInEmployeeId"
+            "loggedInEmployee"
         );
 
 
-    if (!id) {
+    if (!data) {
 
         return null;
     }
 
 
-    const employees =
-        await getEmployees();
+    try {
 
+        return JSON.parse(data);
 
-    return employees.find(
-        employee =>
-            Number(employee.id) ===
-            Number(id)
-    ) || null;
+    }
+    catch (error) {
+
+        console.error(
+            "Session error:",
+            error
+        );
+
+        return null;
+
+    }
+
 }
 
 
-// ========================================
-// CHECK LOGIN
-// ========================================
+// ======================================================
+// REQUIRE LOGIN
+// ======================================================
 
-async function checkLogin() {
+function requireLogin() {
 
     const employee =
-        await getLoggedEmployee();
+        getLoggedInEmployee();
 
 
     if (!employee) {
@@ -265,20 +457,22 @@ async function checkLogin() {
 
 
     return employee;
+
 }
 
 
-// ========================================
+// ======================================================
 // LOGOUT
-// ========================================
+// ======================================================
 
 function logout() {
 
     localStorage.removeItem(
-        "loggedInEmployeeId"
+        "loggedInEmployee"
     );
 
 
     window.location.href =
         "login.html";
+
 }
