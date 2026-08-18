@@ -15,6 +15,7 @@
 
 </head>
 
+
 <body>
 
 
@@ -22,16 +23,19 @@
 
     <div>
 
-        <h2>Daily OT Entry</h2>
+        <h2>
+            Daily OT Entry
+        </h2>
 
         <span id="employeeName">
-            Loading...
+            Employee
         </span>
 
     </div>
 
 
     <button
+        type="button"
         onclick="logout()"
         class="logout-btn">
 
@@ -42,31 +46,50 @@
 </header>
 
 
+
 <main class="container">
 
 
-    <a href="dashboard.html"
-       class="back-link">
+    <a
+        href="dashboard.html"
+        class="back-link">
 
         ← Dashboard
 
     </a>
 
 
+
+    <!-- ENTRY FORM -->
+
     <div class="form-box wide">
 
 
-        <h1>Daily OT Entry</h1>
+        <h1>
+            Daily OT Entry
+        </h1>
 
 
-        <form
-            id="dailyForm"
-            onsubmit="event.preventDefault(); saveDailyRecord();">
+        <p class="subtitle">
 
+            Enter your overtime and
+            extra duty details for the day.
+
+        </p>
+
+
+
+        <form id="dailyForm">
+
+
+            <!-- DATE -->
 
             <label for="date">
-                Date
+
+                Date *
+
             </label>
+
 
             <input
                 type="date"
@@ -75,9 +98,15 @@
             >
 
 
+
+            <!-- OT HOURS -->
+
             <label for="otHours">
+
                 OT Hours
+
             </label>
+
 
             <input
                 type="number"
@@ -88,20 +117,32 @@
             >
 
 
+
+            <!-- EXTRA DUTY -->
+
             <label for="extraDuty">
+
                 Extra Duty
+
             </label>
+
 
             <input
                 type="text"
                 id="extraDuty"
-                placeholder="Example: Computer Maintenance"
+                placeholder="Example: Laptop Maintenance"
             >
 
 
+
+            <!-- EXTRA DUTY HOURS -->
+
             <label for="extraHours">
+
                 Extra Duty Hours
+
             </label>
+
 
             <input
                 type="number"
@@ -112,16 +153,25 @@
             >
 
 
+
+            <!-- REMARKS -->
+
             <label for="remarks">
+
                 Remarks
+
             </label>
+
 
             <textarea
                 id="remarks"
                 rows="4"
-                placeholder="Additional notes..."
+                placeholder="Enter additional details..."
             ></textarea>
 
+
+
+            <!-- SAVE -->
 
             <button
                 type="submit"
@@ -134,17 +184,23 @@
 
         </form>
 
+
     </div>
+
 
 
     <!-- DAILY SUMMARY -->
 
     <div class="summary-box">
 
-        <h2>Selected Date Summary</h2>
+
+        <h2>
+            Selected Date Summary
+        </h2>
 
 
         <div class="summary-items">
+
 
             <div>
 
@@ -153,79 +209,124 @@
                 </span>
 
                 <strong>
+
                     <span id="totalOT">
                         0
                     </span>
+
                     hrs
+
                 </strong>
 
             </div>
+
 
 
             <div>
 
                 <span>
-                    Extra Duty
+                    Total Extra Duty
                 </span>
 
                 <strong>
+
                     <span id="totalExtra">
                         0
                     </span>
+
                     hrs
+
                 </strong>
 
             </div>
 
+
         </div>
 
+
     </div>
+
 
 
     <!-- RECORD TABLE -->
 
     <div class="table-box">
 
-        <h2>Today's Records</h2>
+
+        <h2>
+            Records for Selected Date
+        </h2>
+
 
 
         <div class="table-scroll">
 
+
             <table>
+
 
                 <thead>
 
                     <tr>
 
-                        <th>Date</th>
+                        <th>
+                            Date
+                        </th>
 
-                        <th>OT Hours</th>
+                        <th>
+                            OT Hours
+                        </th>
 
-                        <th>Extra Duty</th>
+                        <th>
+                            Extra Duty
+                        </th>
 
-                        <th>Extra Hours</th>
+                        <th>
+                            Extra Hours
+                        </th>
 
-                        <th>Remarks</th>
+                        <th>
+                            Remarks
+                        </th>
 
-                        <th>Action</th>
+                        <th>
+                            Action
+                        </th>
 
                     </tr>
 
                 </thead>
 
 
+
                 <tbody id="dailyTable">
+
+                    <tr>
+
+                        <td
+                            colspan="6"
+                            style="text-align:center;">
+
+                            No records found.
+
+                        </td>
+
+                    </tr>
 
                 </tbody>
 
+
             </table>
 
+
         </div>
+
 
     </div>
 
 
 </main>
+
 
 
 <script src="js/db.js"></script>
