@@ -1,23 +1,29 @@
-// ======================================================
-// OFFICE OT REGISTER
-// INDEXEDDB DATABASE
-// ======================================================
+// ============================================
+// OFFICE OT REGISTER - INDEXEDDB
+// ============================================
 
-const DB_NAME = "OfficeOTRegisterDB";
+const DB_NAME = "OfficeOTDatabase";
 const DB_VERSION = 1;
 
 const EMPLOYEE_STORE = "employees";
 const OT_STORE = "otRecords";
 const SETTINGS_STORE = "settings";
 
+let dbInstance = null;
 
-// ======================================================
+
+// ============================================
 // OPEN DATABASE
-// ======================================================
+// ============================================
 
 function openDatabase() {
 
     return new Promise((resolve, reject) => {
+
+        if (dbInstance) {
+            resolve(dbInstance);
+            return;
+        }
 
         const request =
             indexedDB.open(DB_NAME, DB_VERSION);
@@ -28,13 +34,11 @@ function openDatabase() {
             const db = event.target.result;
 
 
-            // ------------------------------------------
+            // ------------------------------
             // EMPLOYEES
-            // ------------------------------------------
+            // ------------------------------
 
-            if (!db.objectStoreNames.contains(
-                EMPLOYEE_STORE
-            )) {
+            if (!db.objectStoreNames.contains(EMPLOYEE_STORE)) {
 
                 const employeeStore =
                     db.createObjectStore(
@@ -57,13 +61,11 @@ function openDatabase() {
             }
 
 
-            // ------------------------------------------
+            // ------------------------------
             // OT RECORDS
-            // ------------------------------------------
+            // ------------------------------
 
-            if (!db.objectStoreNames.contains(
-                OT_STORE
-            )) {
+            if (!db.objectStoreNames.contains(OT_STORE)) {
 
                 const otStore =
                     db.createObjectStore(
@@ -104,13 +106,11 @@ function openDatabase() {
             }
 
 
-            // ------------------------------------------
+            // ------------------------------
             // SETTINGS
-            // ------------------------------------------
+            // ------------------------------
 
-            if (!db.objectStoreNames.contains(
-                SETTINGS_STORE
-            )) {
+            if (!db.objectStoreNames.contains(SETTINGS_STORE)) {
 
                 db.createObjectStore(
                     SETTINGS_STORE,
@@ -124,21 +124,21 @@ function openDatabase() {
         };
 
 
-        request.onsuccess = function () {
+        request.onsuccess = function (event) {
 
-            resolve(request.result);
+            dbInstance =
+                event.target.result;
+
+            resolve(dbInstance);
 
         };
 
 
         request.onerror = function () {
 
-            console.error(
-                "Database error:",
+            reject(
                 request.error
             );
-
-            reject(request.error);
 
         };
 
@@ -147,15 +147,15 @@ function openDatabase() {
 }
 
 
-// ======================================================
+
+// ============================================
 // ADD EMPLOYEE
-// ======================================================
+// ============================================
 
 async function addEmployee(employee) {
 
     const db =
         await openDatabase();
-
 
     return new Promise((resolve, reject) => {
 
@@ -164,7 +164,6 @@ async function addEmployee(employee) {
                 EMPLOYEE_STORE,
                 "readwrite"
             );
-
 
         const store =
             transaction.objectStore(
@@ -176,29 +175,37 @@ async function addEmployee(employee) {
             store.add(employee);
 
 
-        request.onsuccess =
-            () => resolve(request.result);
+        request.onsuccess = function () {
+
+            resolve(
+                request.result
+            );
+
+        };
 
 
-        request.onerror =
-            () => reject(request.error);
+        request.onerror = function () {
+
+            reject(
+                request.error
+            );
+
+        };
 
     });
 
 }
 
 
-// ======================================================
-// GET EMPLOYEE BY EMPLOYEE ID
-// ======================================================
 
-async function getEmployeeByEmployeeId(
-    employeeId
-) {
+// ============================================
+// FIND EMPLOYEE
+// ============================================
+
+async function findEmployee(employeeId) {
 
     const db =
         await openDatabase();
-
 
     return new Promise((resolve, reject) => {
 
@@ -208,12 +215,10 @@ async function getEmployeeByEmployeeId(
                 "readonly"
             );
 
-
         const store =
             transaction.objectStore(
                 EMPLOYEE_STORE
             );
-
 
         const index =
             store.index(
@@ -225,27 +230,37 @@ async function getEmployeeByEmployeeId(
             index.get(employeeId);
 
 
-        request.onsuccess =
-            () => resolve(request.result || null);
+        request.onsuccess = function () {
+
+            resolve(
+                request.result || null
+            );
+
+        };
 
 
-        request.onerror =
-            () => reject(request.error);
+        request.onerror = function () {
+
+            reject(
+                request.error
+            );
+
+        };
 
     });
 
 }
 
 
-// ======================================================
+
+// ============================================
 // GET ALL EMPLOYEES
-// ======================================================
+// ============================================
 
 async function getAllEmployees() {
 
     const db =
         await openDatabase();
-
 
     return new Promise((resolve, reject) => {
 
@@ -254,7 +269,6 @@ async function getAllEmployees() {
                 EMPLOYEE_STORE,
                 "readonly"
             );
-
 
         const store =
             transaction.objectStore(
@@ -266,27 +280,37 @@ async function getAllEmployees() {
             store.getAll();
 
 
-        request.onsuccess =
-            () => resolve(request.result);
+        request.onsuccess = function () {
+
+            resolve(
+                request.result || []
+            );
+
+        };
 
 
-        request.onerror =
-            () => reject(request.error);
+        request.onerror = function () {
+
+            reject(
+                request.error
+            );
+
+        };
 
     });
 
 }
 
 
-// ======================================================
+
+// ============================================
 // ADD OT RECORD
-// ======================================================
+// ============================================
 
 async function addRecord(record) {
 
     const db =
         await openDatabase();
-
 
     return new Promise((resolve, reject) => {
 
@@ -295,7 +319,6 @@ async function addRecord(record) {
                 OT_STORE,
                 "readwrite"
             );
-
 
         const store =
             transaction.objectStore(
@@ -307,27 +330,37 @@ async function addRecord(record) {
             store.add(record);
 
 
-        request.onsuccess =
-            () => resolve(request.result);
+        request.onsuccess = function () {
+
+            resolve(
+                request.result
+            );
+
+        };
 
 
-        request.onerror =
-            () => reject(request.error);
+        request.onerror = function () {
+
+            reject(
+                request.error
+            );
+
+        };
 
     });
 
 }
 
 
-// ======================================================
+
+// ============================================
 // GET ALL OT RECORDS
-// ======================================================
+// ============================================
 
 async function getAllRecords() {
 
     const db =
         await openDatabase();
-
 
     return new Promise((resolve, reject) => {
 
@@ -336,7 +369,6 @@ async function getAllRecords() {
                 OT_STORE,
                 "readonly"
             );
-
 
         const store =
             transaction.objectStore(
@@ -348,70 +380,37 @@ async function getAllRecords() {
             store.getAll();
 
 
-        request.onsuccess =
-            () => resolve(request.result);
+        request.onsuccess = function () {
+
+            resolve(
+                request.result || []
+            );
+
+        };
 
 
-        request.onerror =
-            () => reject(request.error);
+        request.onerror = function () {
+
+            reject(
+                request.error
+            );
+
+        };
 
     });
 
 }
 
 
-// ======================================================
-// GET OT RECORD BY ID
-// ======================================================
 
-async function getRecordById(id) {
-
-    const db =
-        await openDatabase();
-
-
-    return new Promise((resolve, reject) => {
-
-        const transaction =
-            db.transaction(
-                OT_STORE,
-                "readonly"
-            );
-
-
-        const store =
-            transaction.objectStore(
-                OT_STORE
-            );
-
-
-        const request =
-            store.get(id);
-
-
-        request.onsuccess =
-            () => resolve(
-                request.result || null
-            );
-
-
-        request.onerror =
-            () => reject(request.error);
-
-    });
-
-}
-
-
-// ======================================================
+// ============================================
 // DELETE OT RECORD
-// ======================================================
+// ============================================
 
 async function deleteRecord(id) {
 
     const db =
         await openDatabase();
-
 
     return new Promise((resolve, reject) => {
 
@@ -420,7 +419,6 @@ async function deleteRecord(id) {
                 OT_STORE,
                 "readwrite"
             );
-
 
         const store =
             transaction.objectStore(
@@ -432,27 +430,35 @@ async function deleteRecord(id) {
             store.delete(id);
 
 
-        request.onsuccess =
-            () => resolve(true);
+        request.onsuccess = function () {
+
+            resolve(true);
+
+        };
 
 
-        request.onerror =
-            () => reject(request.error);
+        request.onerror = function () {
+
+            reject(
+                request.error
+            );
+
+        };
 
     });
 
 }
 
 
-// ======================================================
-// SAVE ADMIN SETTINGS
-// ======================================================
+
+// ============================================
+// SAVE SETTINGS
+// ============================================
 
 async function saveSettings(settings) {
 
     const db =
         await openDatabase();
-
 
     return new Promise((resolve, reject) => {
 
@@ -461,7 +467,6 @@ async function saveSettings(settings) {
                 SETTINGS_STORE,
                 "readwrite"
             );
-
 
         const store =
             transaction.objectStore(
@@ -473,27 +478,35 @@ async function saveSettings(settings) {
             store.put(settings);
 
 
-        request.onsuccess =
-            () => resolve(true);
+        request.onsuccess = function () {
+
+            resolve(true);
+
+        };
 
 
-        request.onerror =
-            () => reject(request.error);
+        request.onerror = function () {
+
+            reject(
+                request.error
+            );
+
+        };
 
     });
 
 }
 
 
-// ======================================================
-// GET ADMIN SETTINGS
-// ======================================================
+
+// ============================================
+// GET SETTINGS
+// ============================================
 
 async function getSettings() {
 
     const db =
         await openDatabase();
-
 
     return new Promise((resolve, reject) => {
 
@@ -502,7 +515,6 @@ async function getSettings() {
                 SETTINGS_STORE,
                 "readonly"
             );
-
 
         const store =
             transaction.objectStore(
@@ -514,14 +526,22 @@ async function getSettings() {
             store.get("officeSettings");
 
 
-        request.onsuccess =
-            () => resolve(
+        request.onsuccess = function () {
+
+            resolve(
                 request.result || null
             );
 
+        };
 
-        request.onerror =
-            () => reject(request.error);
+
+        request.onerror = function () {
+
+            reject(
+                request.error
+            );
+
+        };
 
     });
 
