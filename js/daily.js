@@ -1,677 +1,341 @@
-// ============================================
-// DAILY OT MANAGEMENT
-// ============================================
+<!DOCTYPE html>
+<html lang="en">
 
-let currentEmployee = null;
+<head>
 
+    <meta charset="UTF-8">
 
-// ============================================
-// PAGE LOAD
-// ============================================
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
-document.addEventListener("DOMContentLoaded", async function () {
+    <title>Daily OT Entry</title>
 
-    try {
+    <link rel="stylesheet"
+          href="css/style.css">
 
-        // Get logged-in employee
-        currentEmployee = getLoggedInEmployee();
+</head>
 
-        if (!currentEmployee) {
 
-            window.location.href = "login.html";
-            return;
-        }
+<body>
 
 
-        // Show employee name
-        const nameElement =
-            document.getElementById("employeeName");
+<header class="topbar">
 
-        if (nameElement) {
+    <div>
 
-            nameElement.textContent =
-                currentEmployee.name;
-        }
+        <h2>
+            Daily OT Entry
+        </h2>
 
+        <span id="employeeName">
+            Employee
+        </span>
 
-        // Set today's date
-        const dateInput =
-            document.getElementById("date");
+    </div>
 
-        if (dateInput) {
 
-            const today =
-                new Date()
-                    .toISOString()
-                    .split("T")[0];
+    <button
+        type="button"
+        onclick="logout()"
+        class="logout-btn">
 
-            dateInput.value = today;
+        Logout
 
-            dateInput.addEventListener(
-                "change",
-                loadSelectedDate
-            );
-        }
+    </button>
 
+</header>
 
-        // Load today's records
-        await loadSelectedDate();
 
-    }
-    catch (error) {
 
-        console.error(
-            "Daily page error:",
-            error
-        );
+<main class="container">
 
-        alert(
-            "Unable to load daily OT page."
-        );
-    }
 
-});
+    <a
+        href="dashboard.html"
+        class="back-link">
 
+        ← Dashboard
 
-// ============================================
-// GET LOGGED-IN EMPLOYEE
-// ============================================
+    </a>
 
-function getLoggedInEmployee() {
 
-    const employee =
-        localStorage.getItem(
-            "loggedInEmployee"
-        );
 
-    if (!employee) {
+    <!-- ENTRY FORM -->
 
-        return null;
-    }
+    <div class="form-box wide">
 
-    try {
 
-        return JSON.parse(employee);
+        <h1>
+            Daily OT Entry
+        </h1>
 
-    }
-    catch (error) {
 
-        console.error(
-            "Login data error:",
-            error
-        );
+        <p class="subtitle">
 
-        return null;
-    }
-}
+            Enter your overtime and
+            extra duty details for the day.
 
+        </p>
 
-// ============================================
-// SAVE DAILY RECORD
-// ============================================
 
-async function saveDailyRecord() {
 
-    try {
+        <form id="dailyForm">
 
-        if (!currentEmployee) {
 
-            alert(
-                "Employee login required."
-            );
+            <!-- DATE -->
 
-            window.location.href =
-                "login.html";
+            <label for="date">
 
-            return;
-        }
+                Date *
 
+            </label>
 
-        // ------------------------------
-        // Get form values
-        // ------------------------------
 
-        const date =
-            document.getElementById(
-                "date"
-            ).value;
+            <input
+                type="date"
+                id="date"
+                required
+            >
 
-        const otHours =
-            parseFloat(
-                document.getElementById(
-                    "otHours"
-                ).value
-            ) || 0;
 
-        const extraDuty =
-            document.getElementById(
-                "extraDuty"
-            ).value.trim();
 
-        const extraHours =
-            parseFloat(
-                document.getElementById(
-                    "extraHours"
-                ).value
-            ) || 0;
+            <!-- OT HOURS -->
 
-        const remarks =
-            document.getElementById(
-                "remarks"
-            ).value.trim();
+            <label for="otHours">
 
+                OT Hours
 
-        // ------------------------------
-        // Validation
-        // ------------------------------
+            </label>
 
-        if (!date) {
 
-            alert(
-                "Please select a date."
-            );
+            <input
+                type="number"
+                id="otHours"
+                min="0"
+                step="0.5"
+                placeholder="Example: 2"
+            >
 
-            return;
-        }
 
 
-        if (
-            otHours < 0 ||
-            extraHours < 0
-        ) {
+            <!-- EXTRA DUTY -->
 
-            alert(
-                "Hours cannot be negative."
-            );
+            <label for="extraDuty">
 
-            return;
-        }
+                Extra Duty
 
+            </label>
 
-        if (
-            otHours === 0 &&
-            extraHours === 0
-        ) {
 
-            alert(
-                "Please enter OT hours or Extra Duty hours."
-            );
+            <input
+                type="text"
+                id="extraDuty"
+                placeholder="Example: Laptop Maintenance"
+            >
 
-            return;
-        }
 
 
-        if (
-            extraHours > 0 &&
-            extraDuty === ""
-        ) {
+            <!-- EXTRA DUTY HOURS -->
 
-            alert(
-                "Please enter Extra Duty details."
-            );
+            <label for="extraHours">
 
-            return;
-        }
+                Extra Duty Hours
 
+            </label>
 
-        // ------------------------------
-        // Month
-        // ------------------------------
 
-        const month =
-            date.substring(0, 7);
+            <input
+                type="number"
+                id="extraHours"
+                min="0"
+                step="0.5"
+                placeholder="Example: 1.5"
+            >
 
 
-        // ------------------------------
-        // Create record
-        // ------------------------------
 
-        const record = {
+            <!-- REMARKS -->
 
-            employeeId:
-                currentEmployee.employeeId,
+            <label for="remarks">
 
-            employeeName:
-                currentEmployee.name,
+                Remarks
 
-            date:
-                date,
+            </label>
 
-            month:
-                month,
 
-            otHours:
-                otHours,
+            <textarea
+                id="remarks"
+                rows="4"
+                placeholder="Enter additional details..."
+            ></textarea>
 
-            extraDuty:
-                extraDuty,
 
-            extraHours:
-                extraHours,
 
-            remarks:
-                remarks,
+            <!-- SAVE -->
 
-            createdAt:
-                new Date().toISOString()
+            <button
+                type="submit"
+                class="primary-btn">
 
-        };
+                💾 Save Daily Record
 
+            </button>
 
-        // ------------------------------
-        // Save IndexedDB
-        // ------------------------------
 
-        await addRecord(record);
+        </form>
 
 
-        // ------------------------------
-        // Success
-        // ------------------------------
+    </div>
 
-        alert(
-            "Daily OT record saved successfully."
-        );
 
 
-        // Clear fields
-        document.getElementById(
-            "otHours"
-        ).value = "";
+    <!-- DAILY SUMMARY -->
 
+    <div class="summary-box">
 
-        document.getElementById(
-            "extraDuty"
-        ).value = "";
 
+        <h2>
+            Selected Date Summary
+        </h2>
 
-        document.getElementById(
-            "extraHours"
-        ).value = "";
 
+        <div class="summary-items">
 
-        document.getElementById(
-            "remarks"
-        ).value = "";
 
+            <div>
 
-        // Reload records
-        await loadSelectedDate();
+                <span>
+                    Total OT
+                </span>
 
-    }
-    catch (error) {
+                <strong>
 
-        console.error(
-            "Save record error:",
-            error
-        );
+                    <span id="totalOT">
+                        0
+                    </span>
 
-        alert(
-            "Failed to save OT record."
-        );
-    }
-}
+                    hrs
 
+                </strong>
 
-// ============================================
-// LOAD SELECTED DATE
-// ============================================
+            </div>
 
-async function loadSelectedDate() {
 
-    try {
 
-        if (!currentEmployee) {
-            return;
-        }
+            <div>
 
+                <span>
+                    Total Extra Duty
+                </span>
 
-        const date =
-            document.getElementById(
-                "date"
-            ).value;
+                <strong>
 
+                    <span id="totalExtra">
+                        0
+                    </span>
 
-        if (!date) {
-            return;
-        }
+                    hrs
 
+                </strong>
 
-        const allRecords =
-            await getAllRecords();
+            </div>
 
 
-        // Employee + date filter
+        </div>
 
-        const records =
-            allRecords.filter(
-                record =>
 
-                    String(
-                        record.employeeId
-                    ) === String(
-                        currentEmployee.employeeId
-                    )
+    </div>
 
-                    &&
 
-                    record.date === date
-            );
 
+    <!-- RECORD TABLE -->
 
-        displayDailyRecords(records);
+    <div class="table-box">
 
 
-        calculateDailySummary(records);
+        <h2>
+            Records for Selected Date
+        </h2>
 
-    }
-    catch (error) {
 
-        console.error(
-            "Load date error:",
-            error
-        );
-    }
-}
 
+        <div class="table-scroll">
 
-// ============================================
-// DISPLAY DAILY RECORDS
-// ============================================
 
-function displayDailyRecords(records) {
+            <table>
 
-    const table =
-        document.getElementById(
-            "dailyTable"
-        );
 
+                <thead>
 
-    if (!table) {
-        return;
-    }
+                    <tr>
 
+                        <th>
+                            Date
+                        </th>
 
-    table.innerHTML = "";
+                        <th>
+                            OT Hours
+                        </th>
 
+                        <th>
+                            Extra Duty
+                        </th>
 
-    if (records.length === 0) {
+                        <th>
+                            Extra Hours
+                        </th>
 
-        table.innerHTML = `
+                        <th>
+                            Remarks
+                        </th>
 
-            <tr>
+                        <th>
+                            Action
+                        </th>
 
-                <td
-                    colspan="6"
-                    style="text-align:center;">
+                    </tr>
 
-                    No records found for
-                    this date.
+                </thead>
 
-                </td>
 
-            </tr>
 
-        `;
+                <tbody id="dailyTable">
 
-        return;
-    }
+                    <tr>
 
+                        <td
+                            colspan="6"
+                            style="text-align:center;">
 
-    records.forEach(
-        record => {
+                            No records found.
 
-            const row =
-                document.createElement(
-                    "tr"
-                );
+                        </td>
 
+                    </tr>
 
-            row.innerHTML = `
+                </tbody>
 
-                <td>
-                    ${formatDate(record.date)}
-                </td>
 
-                <td>
-                    ${record.otHours} hrs
-                </td>
+            </table>
 
-                <td>
-                    ${escapeHTML(
-                        record.extraDuty || "-"
-                    )}
-                </td>
 
-                <td>
-                    ${record.extraHours} hrs
-                </td>
+        </div>
 
-                <td>
-                    ${escapeHTML(
-                        record.remarks || "-"
-                    )}
-                </td>
 
-                <td>
+    </div>
 
-                    <button
-                        onclick="deleteDailyRecord(${record.id})">
 
-                        Delete
+</main>
 
-                    </button>
 
-                </td>
 
-            `;
+<script src="js/db.js"></script>
 
+<script src="js/auth.js"></script>
 
-            table.appendChild(row);
+<script src="js/daily.js"></script>
 
-        }
-    );
 
-}
+</body>
 
-
-// ============================================
-// DAILY SUMMARY
-// ============================================
-
-function calculateDailySummary(records) {
-
-    let totalOT = 0;
-
-    let totalExtra = 0;
-
-
-    records.forEach(
-        record => {
-
-            totalOT +=
-                Number(
-                    record.otHours
-                ) || 0;
-
-
-            totalExtra +=
-                Number(
-                    record.extraHours
-                ) || 0;
-
-        }
-    );
-
-
-    const otElement =
-        document.getElementById(
-            "totalOT"
-        );
-
-
-    const extraElement =
-        document.getElementById(
-            "totalExtra"
-        );
-
-
-    if (otElement) {
-
-        otElement.textContent =
-            formatHours(totalOT);
-    }
-
-
-    if (extraElement) {
-
-        extraElement.textContent =
-            formatHours(totalExtra);
-    }
-
-}
-
-
-// ============================================
-// DELETE RECORD
-// ============================================
-
-async function deleteDailyRecord(id) {
-
-    const confirmation =
-        confirm(
-            "Are you sure you want to delete this OT record?"
-        );
-
-
-    if (!confirmation) {
-
-        return;
-    }
-
-
-    try {
-
-        await deleteRecord(id);
-
-
-        alert(
-            "Record deleted successfully."
-        );
-
-
-        await loadSelectedDate();
-
-    }
-    catch (error) {
-
-        console.error(
-            "Delete error:",
-            error
-        );
-
-
-        alert(
-            "Unable to delete record."
-        );
-    }
-
-}
-
-
-// ============================================
-// FORMAT DATE
-// ============================================
-
-function formatDate(dateString) {
-
-    if (!dateString) {
-        return "-";
-    }
-
-
-    const parts =
-        dateString.split("-");
-
-
-    if (parts.length !== 3) {
-
-        return dateString;
-    }
-
-
-    return (
-        parts[2] +
-        "-" +
-        parts[1] +
-        "-" +
-        parts[0]
-    );
-
-}
-
-
-// ============================================
-// FORMAT HOURS
-// ============================================
-
-function formatHours(hours) {
-
-    const number =
-        Number(hours) || 0;
-
-
-    if (
-        Number.isInteger(number)
-    ) {
-
-        return number.toString();
-    }
-
-
-    return number
-        .toFixed(2)
-        .replace(/\.00$/, "");
-
-}
-
-
-// ============================================
-// SECURITY
-// ============================================
-
-function escapeHTML(value) {
-
-    if (!value) {
-        return "";
-    }
-
-
-    return String(value)
-
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-
-        .replace(
-            /</g,
-            "&lt;"
-        )
-
-        .replace(
-            />/g,
-            "&gt;"
-        )
-
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-
-        .replace(
-            /'/g,
-            "&#039;"
-        );
-
-}
+</html>
