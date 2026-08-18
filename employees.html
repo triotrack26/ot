@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Employee Register</title>
+
+<link rel="stylesheet"
+      href="css/style.css">
+
+</head>
+
+<body>
+
+<header class="topbar">
+
+    <h1>Employee Register</h1>
+
+</header>
+
+<div class="container">
+
+    <a href="index.html">← Dashboard</a>
+
+    <h2>Add Employee</h2>
+
+    <form id="employeeForm">
+
+        <label>Employee ID</label>
+
+        <input
+            type="text"
+            id="employeeId"
+            required
+        >
+
+        <label>Employee Name</label>
+
+        <input
+            type="text"
+            id="employeeName"
+            required
+        >
+
+        <label>Department</label>
+
+        <input
+            type="text"
+            id="department"
+        >
+
+        <label>Designation</label>
+
+        <input
+            type="text"
+            id="designation"
+        >
+
+        <button type="submit">
+            Add Employee
+        </button>
+
+    </form>
+
+    <hr>
+
+    <h2>Employees</h2>
+
+    <table>
+
+        <thead>
+
+        <tr>
+
+            <th>ID</th>
+            <th>Employee ID</th>
+            <th>Name</th>
+            <th>Department</th>
+            <th>Designation</th>
+            <th>Action</th>
+
+        </tr>
+
+        </thead>
+
+        <tbody id="employeeTable"></tbody>
+
+    </table>
+
+</div>
+
+<script src="js/db.js"></script>
+
+<script>
+
+const form =
+    document.getElementById("employeeForm");
+
+
+form.addEventListener(
+    "submit",
+    async function(event) {
+
+        event.preventDefault();
+
+        const employee = {
+
+            employeeId:
+                document.getElementById(
+                    "employeeId"
+                ).value.trim(),
+
+            name:
+                document.getElementById(
+                    "employeeName"
+                ).value.trim(),
+
+            department:
+                document.getElementById(
+                    "department"
+                ).value.trim(),
+
+            designation:
+                document.getElementById(
+                    "designation"
+                ).value.trim(),
+
+            createdAt:
+                new Date().toISOString()
+        };
+
+        await addEmployee(employee);
+
+        alert("Employee saved successfully.");
+
+        form.reset();
+
+        loadEmployees();
+    }
+);
+
+
+async function loadEmployees() {
+
+    const employees =
+        await getEmployees();
+
+    const table =
+        document.getElementById(
+            "employeeTable"
+        );
+
+    table.innerHTML = "";
+
+    employees.forEach(employee => {
+
+        const row =
+            document.createElement("tr");
+
+        row.innerHTML = `
+
+            <td>${employee.id}</td>
+
+            <td>${employee.employeeId}</td>
+
+            <td>${employee.name}</td>
+
+            <td>${employee.department || ""}</td>
+
+            <td>${employee.designation || ""}</td>
+
+            <td>
+                <button
+                    onclick="removeEmployee(${employee.id})">
+                    Delete
+                </button>
+            </td>
+        `;
+
+        table.appendChild(row);
+
+    });
+}
+
+
+async function removeEmployee(id) {
+
+    if (!confirm(
+        "Delete this employee?"
+    )) {
+
+        return;
+    }
+
+    await deleteEmployee(id);
+
+    loadEmployees();
+}
+
+
+loadEmployees();
+
+</script>
+
+</body>
+
+</html>
