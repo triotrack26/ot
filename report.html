@@ -3,516 +3,202 @@
 
 <head>
 
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
-<title>Monthly Report</title>
+    <title>Monthly Report</title>
 
-<link rel="stylesheet"
-href="css/style.css">
+    <link rel="stylesheet"
+          href="css/style.css">
 
 </head>
 
 <body>
 
+
 <header class="topbar">
 
-<h1>Monthly OT Report</h1>
+    <div>
+
+        <h2>Monthly Report</h2>
+
+        <span>
+            OT & Extra Duty Report
+        </span>
+
+    </div>
+
+
+    <button
+        onclick="logout()"
+        class="logout-btn">
+
+        Logout
+
+    </button>
 
 </header>
 
 
-<div class="container">
-
-<a href="index.html">
-← Dashboard
-</a>
+<main class="container">
 
 
-<h2>Select Month</h2>
+    <a href="dashboard.html"
+       class="back-link">
+
+        ← Dashboard
+
+    </a>
 
 
-<input
-type="month"
-id="month"
->
+    <div class="report-controls">
 
 
-<button
-onclick="loadReport()">
+        <div>
 
-View Report
+            <label for="month">
+                Select Month
+            </label>
 
-</button>
+            <input
+                type="month"
+                id="month"
+            >
 
-
-<button
-onclick="downloadExcel()">
-
-Download Excel
-
-</button>
+        </div>
 
 
-<hr>
+        <button
+            onclick="loadMonthlyReport()"
+            class="secondary-btn">
+
+            🔍 View Report
+
+        </button>
 
 
-<div id="summary"></div>
+        <button
+            onclick="downloadExcel()"
+            class="primary-btn">
+
+            📥 Download Excel
+
+        </button>
 
 
-<table id="reportTable">
-
-<thead>
-
-<tr>
-
-<th>Date</th>
-<th>Employee ID</th>
-<th>Employee</th>
-<th>OT Hours</th>
-<th>Extra Duty</th>
-<th>Extra Hours</th>
-<th>Remarks</th>
-
-</tr>
-
-</thead>
-
-<tbody id="reportBody">
-
-</tbody>
-
-</table>
+    </div>
 
 
-</div>
+    <div class="summary-box">
+
+
+        <h2>Monthly Summary</h2>
+
+
+        <div class="summary-items">
+
+
+            <div>
+
+                <span>
+                    Total OT
+                </span>
+
+                <strong>
+
+                    <span id="totalOT">
+                        0
+                    </span>
+
+                    hrs
+
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                <span>
+                    Total Extra Duty
+                </span>
+
+                <strong>
+
+                    <span id="totalExtra">
+                        0
+                    </span>
+
+                    hrs
+
+                </strong>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+    <div class="table-box">
+
+
+        <h2>
+            Monthly Records
+        </h2>
+
+
+        <div class="table-scroll">
+
+
+            <table>
+
+
+                <thead>
+
+                    <tr>
+
+                        <th>Date</th>
+
+                        <th>OT Hours</th>
+
+                        <th>Extra Duty</th>
+
+                        <th>Extra Hours</th>
+
+                        <th>Remarks</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="reportTable">
+
+                </tbody>
+
+
+            </table>
+
+
+        </div>
+
+
+    </div>
+
+
+</main>
 
 
 <script src="js/db.js"></script>
 
+<script src="js/auth.js"></script>
 
-<script>
+<script src="js/report.js"></script>
 
-let currentRecords = [];
-let currentEmployees = [];
-
-
-const now =
-    new Date();
-
-
-document.getElementById(
-    "month"
-).value =
-
-    now.getFullYear() +
-    "-" +
-    String(
-        now.getMonth() + 1
-    ).padStart(2, "0");
-
-
-async function loadReport() {
-
-    const month =
-        document.getElementById(
-            "month"
-        ).value;
-
-
-    if (!month) {
-
-        alert(
-            "Select a month."
-        );
-
-        return;
-    }
-
-
-    currentRecords =
-        await getRecordsByMonth(
-            month
-        );
-
-
-    currentEmployees =
-        await getEmployees();
-
-
-    const body =
-        document.getElementById(
-            "reportBody"
-        );
-
-
-    body.innerHTML = "";
-
-
-    let totalOT = 0;
-
-    let totalExtra = 0;
-
-
-    currentRecords.sort(
-        (a, b) =>
-            a.date.localeCompare(
-                b.date
-            )
-    );
-
-
-    currentRecords.forEach(
-        record => {
-
-            const employee =
-                currentEmployees.find(
-                    e =>
-                        e.id ===
-                        record.employeeId
-                );
-
-
-            totalOT +=
-                Number(
-                    record.otHours || 0
-                );
-
-
-            totalExtra +=
-                Number(
-                    record.extraHours || 0
-                );
-
-
-            const row =
-                document.createElement(
-                    "tr"
-                );
-
-
-            row.innerHTML = `
-
-            <td>
-                ${record.date}
-            </td>
-
-            <td>
-                ${employee
-                    ? employee.employeeId
-                    : ""}
-            </td>
-
-            <td>
-                ${employee
-                    ? employee.name
-                    : "Unknown"}
-            </td>
-
-            <td>
-                ${record.otHours}
-            </td>
-
-            <td>
-                ${record.extraDuty || "-"}
-            </td>
-
-            <td>
-                ${record.extraHours}
-            </td>
-
-            <td>
-                ${record.remarks || "-"}
-            </td>
-
-            `;
-
-
-            body.appendChild(row);
-
-        }
-    );
-
-
-    document.getElementById(
-        "summary"
-    ).innerHTML = `
-
-        <div class="summary">
-
-            <strong>
-                Total Records:
-            </strong>
-
-            ${currentRecords.length}
-
-            &nbsp;&nbsp;
-
-            <strong>
-                Total OT:
-            </strong>
-
-            ${totalOT.toFixed(2)} Hours
-
-            &nbsp;&nbsp;
-
-            <strong>
-                Total Extra Duty:
-            </strong>
-
-            ${totalExtra.toFixed(2)} Hours
-
-        </div>
-
-    `;
-
-}
-
-
-function downloadExcel() {
-
-    if (
-        currentRecords.length === 0
-    ) {
-
-        alert(
-            "Load a month with records first."
-        );
-
-        return;
-    }
-
-
-    const month =
-        document.getElementById(
-            "month"
-        ).value;
-
-
-    let totalOT = 0;
-
-    let totalExtra = 0;
-
-
-    let rows = "";
-
-
-    currentRecords.forEach(
-        record => {
-
-            const employee =
-                currentEmployees.find(
-                    e =>
-                        e.id ===
-                        record.employeeId
-                );
-
-
-            totalOT +=
-                Number(
-                    record.otHours || 0
-                );
-
-
-            totalExtra +=
-                Number(
-                    record.extraHours || 0
-                );
-
-
-            rows += `
-
-            <tr>
-
-                <td>
-                    ${record.date}
-                </td>
-
-                <td>
-                    ${employee
-                        ? employee.employeeId
-                        : ""}
-                </td>
-
-                <td>
-                    ${employee
-                        ? employee.name
-                        : ""}
-                </td>
-
-                <td>
-                    ${record.otHours}
-                </td>
-
-                <td>
-                    ${record.extraDuty || ""}
-                </td>
-
-                <td>
-                    ${record.extraHours}
-                </td>
-
-                <td>
-                    ${record.remarks || ""}
-                </td>
-
-            </tr>
-
-            `;
-
-        }
-    );
-
-
-    const html = `
-
-    <html>
-
-    <head>
-
-        <meta charset="UTF-8">
-
-        <style>
-
-            table {
-                border-collapse: collapse;
-                width: 100%;
-            }
-
-            th, td {
-                border: 1px solid black;
-                padding: 6px;
-            }
-
-            th {
-                font-weight: bold;
-            }
-
-        </style>
-
-    </head>
-
-    <body>
-
-
-        <h2>
-            Office Overtime Register
-        </h2>
-
-
-        <h3>
-            Month: ${month}
-        </h3>
-
-
-        <table>
-
-            <tr>
-
-                <th>Date</th>
-
-                <th>Employee ID</th>
-
-                <th>Employee</th>
-
-                <th>OT Hours</th>
-
-                <th>Extra Duty</th>
-
-                <th>Extra Hours</th>
-
-                <th>Remarks</th>
-
-            </tr>
-
-
-            ${rows}
-
-
-            <tr>
-
-                <th colspan="3">
-                    TOTAL
-                </th>
-
-                <th>
-                    ${totalOT.toFixed(2)}
-                </th>
-
-                <th></th>
-
-                <th>
-                    ${totalExtra.toFixed(2)}
-                </th>
-
-                <th></th>
-
-            </tr>
-
-        </table>
-
-
-    </body>
-
-    </html>
-
-    `;
-
-
-    const blob =
-        new Blob(
-            [html],
-            {
-                type:
-                    "application/vnd.ms-excel"
-            }
-        );
-
-
-    const url =
-        URL.createObjectURL(
-            blob
-        );
-
-
-    const link =
-        document.createElement(
-            "a"
-        );
-
-
-    link.href = url;
-
-
-    link.download =
-        `Office_OT_${month}.xls`;
-
-
-    document.body.appendChild(
-        link
-    );
-
-
-    link.click();
-
-
-    document.body.removeChild(
-        link
-    );
-
-
-    URL.revokeObjectURL(
-        url
-    );
-
-}
-
-
-loadReport();
-
-</script>
 
 </body>
 
