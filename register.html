@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Daily OT Register</title>
+
+<link rel="stylesheet"
+href="css/style.css">
+
+</head>
+
+<body>
+
+<header class="topbar">
+
+<h1>Daily OT Register</h1>
+
+</header>
+
+
+<div class="container">
+
+<a href="index.html">
+← Dashboard
+</a>
+
+
+<h2>Daily Entry</h2>
+
+
+<label>Date</label>
+
+<input
+type="date"
+id="date"
+>
+
+
+<label>Employee</label>
+
+<select id="employee">
+
+<option value="">
+Select Employee
+</option>
+
+</select>
+
+
+<label>OT Hours</label>
+
+<input
+type="number"
+id="otHours"
+step="0.5"
+min="0"
+placeholder="Example: 2.5"
+>
+
+
+<label>Extra Duty</label>
+
+<input
+type="text"
+id="extraDuty"
+placeholder="Example: Computer Maintenance"
+>
+
+
+<label>Extra Duty Hours</label>
+
+<input
+type="number"
+id="extraHours"
+step="0.5"
+min="0"
+value="0"
+>
+
+
+<label>Remarks</label>
+
+<textarea
+id="remarks"
+placeholder="Optional remarks">
+</textarea>
+
+
+<button
+onclick="saveDailyRecord()">
+
+Save Daily Record
+
+</button>
+
+
+<hr>
+
+
+<h2>Saved Records</h2>
+
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Date</th>
+<th>Employee</th>
+<th>OT Hours</th>
+<th>Extra Duty</th>
+<th>Extra Hours</th>
+<th>Remarks</th>
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody
+id="recordTable">
+</tbody>
+
+</table>
+
+
+</div>
+
+
+<script src="js/db.js"></script>
+
+
+<script>
+
+const dateInput =
+    document.getElementById("date");
+
+
+const today =
+    new Date()
+    .toISOString()
+    .split("T")[0];
+
+
+dateInput.value = today;
+
+
+async function loadEmployees() {
+
+    const employees =
+        await getEmployees();
+
+    const select =
+        document.getElementById(
+            "employee"
+        );
+
+    select.innerHTML =
+        `<option value="">
+        Select Employee
+        </option>`;
+
+
+    employees.forEach(employee => {
+
+        const option =
+            document.createElement(
+                "option"
+            );
+
+        option.value =
+            employee.id;
+
+        option.textContent =
+            employee.employeeId +
+            " - " +
+            employee.name;
+
+        select.appendChild(option);
+
+    });
+}
+
+
+async function saveDailyRecord() {
+
+    const date =
+        document.getElementById(
+            "date"
+        ).value;
+
+
+    const employeeId =
+        Number(
+            document.getElementById(
+                "employee"
+            ).value
+        );
+
+
+    const otHours =
+        Number(
+            document.getElementById(
+                "otHours"
+            ).value || 0
+        );
+
+
+    const extraDuty =
+        document.getElementById(
+            "extraDuty"
+        ).value.trim();
+
+
+    const extraHours =
+        Number(
+            document.getElementById(
+                "extraHours"
+            ).value || 0
+        );
+
+
+    const remarks =
+        document.getElementById(
+            "remarks"
+        ).value.trim();
+
+
+    if (!date) {
+
+        alert("Select date.");
+
+        return;
+    }
+
+
+    if (!employeeId) {
+
+        alert("Select employee.");
+
+        return;
+    }
+
+
+    if (
+        otHours === 0 &&
+        extraHours === 0
+    ) {
+
+        alert(
+            "Enter OT hours or Extra Duty hours."
+        );
+
+        return;
+    }
+
+
+    const month =
+        date.substring(0, 7);
+
+
+    const record = {
+
+        date: date,
+
+        month: month,
+
+        employeeId: employeeId,
+
+        otHours: otHours,
+
+        extraDuty: extraDuty,
+
+        extraHours: extraHours,
+
+        remarks: remarks,
+
+        createdAt:
+            new Date().toISOString()
+
+    };
+
+
+    await addRecord(record);
+
+
+    alert(
+        "Daily OT record saved permanently."
+    );
+
+
+    document.getElementById(
+        "otHours"
+    ).value = "";
+
+
+    document.getElementById(
+        "extraDuty"
+    ).value = "";
+
+
+    document.getElementById(
+        "extraHours"
+    ).value = "0";
+
+
+    document.getElementById(
+        "remarks"
+    ).value = "";
+
+
+    loadRecords();
+
+}
+
+
+async function loadRecords() {
+
+    const selectedDate =
+        document.getElementById(
+            "date"
+        ).value;
+
+
+    const records =
+        await getRecordsByDate(
+            selectedDate
+        );
+
+
+    const employees =
+        await getEmployees();
+
+
+    const table =
+        document.getElementById(
+            "recordTable"
+        );
+
+
+    table.innerHTML = "";
+
+
+    records.forEach(record => {
+
+        const employee =
+            employees.find(
+                e =>
+                    e.id ===
+                    record.employeeId
+            );
+
+
+        const row =
+            document.createElement("tr");
+
+
+        row.innerHTML = `
+
+        <td>
+            ${record.date}
+        </td>
+
+        <td>
+            ${employee
+                ? employee.name
+                : "Unknown"}
+        </td>
+
+        <td>
+            ${record.otHours}
+        </td>
+
+        <td>
+            ${record.extraDuty || "-"}
+        </td>
+
+        <td>
+            ${record.extraHours}
+        </td>
+
+        <td>
+            ${record.remarks || "-"}
+        </td>
+
+        <td>
+
+            <button
+            onclick="removeRecord(${record.id})">
+
+            Delete
+
+            </button>
+
+        </td>
+
+        `;
+
+
+        table.appendChild(row);
+
+    });
+
+}
+
+
+async function removeRecord(id) {
+
+    if (
+        !confirm(
+            "Delete this record permanently?"
+        )
+    ) {
+
+        return;
+    }
+
+
+    await deleteRecord(id);
+
+
+    loadRecords();
+
+}
+
+
+dateInput.addEventListener(
+    "change",
+    loadRecords
+);
+
+
+loadEmployees();
+
+loadRecords();
+
+</script>
+
+</body>
+
+</html>
